@@ -12,17 +12,17 @@ Establish the core platform and identity system.
 
 ## Goals
 
-* Authentication
-* User Management
-* Organisations (Workspaces)
-* Memberships
-* Roles
-* Permissions
-* Session Management
+- Authentication
+- User Management
+- Workspaces (Workspaces)
+- Memberships
+- Roles
+- Permissions
+- Session Management
 
 **Outcome**
 
-A secure multi-tenant platform where users can create organisations and collaborate through memberships.
+A secure multi-tenant platform where users can create workspaces and collaborate through memberships.
 
 ---
 
@@ -32,13 +32,13 @@ Build the merchant's product catalogue.
 
 ## Goals
 
-* Products
-* Categories
-* Collections
-* Product Media
-* Product Variants
-* Inventory
-* Stock Management
+- Products
+- Categories
+- Collections
+- Product Media
+- Product Variants
+- Inventory
+- Stock Management
 
 **Outcome**
 
@@ -52,11 +52,11 @@ Model the customer side of the platform.
 
 ## Goals
 
-* Customers
-* Addresses
-* Customer Groups
-* Notes
-* Customer Activity
+- Customers
+- Addresses
+- Customer Groups
+- Notes
+- Customer Activity
 
 **Outcome**
 
@@ -70,12 +70,12 @@ Introduce the sales workflow.
 
 ## Goals
 
-* Shopping Carts
-* Orders
-* Order Items
-* Order Lifecycle
-* Returns
-* Refunds
+- Shopping Carts
+- Orders
+- Order Items
+- Order Lifecycle
+- Returns
+- Refunds
 
 **Outcome**
 
@@ -89,11 +89,11 @@ Handle fulfilment.
 
 ## Goals
 
-* Payment Gateways
-* Payment Processing
-* Shipping Providers
-* Shipment Tracking
-* Tax Support
+- Payment Gateways
+- Payment Processing
+- Shipping Providers
+- Shipment Tracking
+- Tax Support
 
 **Outcome**
 
@@ -101,21 +101,21 @@ Orders can be paid for and fulfilled through external providers.
 
 ---
 
-# Phase 6 — Team & Organisation
+# Phase 6 — Team & Workspaces
 
 Expand collaboration features.
 
 ## Goals
 
-* User Invitations
-* Team Management
-* Custom Roles
-* Permission Management
-* Activity Logs
+- User Invitations
+- Team Management
+- Custom Roles
+- Permission Management
+- Activity Logs
 
 **Outcome**
 
-Organisations can safely manage multiple users with different responsibilities.
+Workspaces can safely manage multiple users with different responsibilities.
 
 ---
 
@@ -125,12 +125,12 @@ Connect with external services.
 
 ## Goals
 
-* WhatsApp
-* Email Providers
-* SMS Providers
-* Webhooks
-* API Keys
-* Third-party Integrations
+- WhatsApp
+- Email Providers
+- SMS Providers
+- Webhooks
+- API Keys
+- Third-party Integrations
 
 **Outcome**
 
@@ -144,12 +144,12 @@ Provide shared infrastructure for the platform.
 
 ## Goals
 
-* Background Jobs
-* File Storage
-* Notifications
-* Search
-* Caching
-* Rate Limiting
+- Background Jobs
+- File Storage
+- Notifications
+- Search
+- Caching
+- Rate Limiting
 
 **Outcome**
 
@@ -163,11 +163,11 @@ Provide reporting and business insights.
 
 ## Goals
 
-* Dashboards
-* Sales Reports
-* Inventory Reports
-* Customer Analytics
-* Business Metrics
+- Dashboards
+- Sales Reports
+- Inventory Reports
+- Customer Analytics
+- Business Metrics
 
 **Outcome**
 
@@ -181,11 +181,11 @@ Support customer-facing storefronts.
 
 ## Goals
 
-* Storefront API
-* Themes
-* Public Product Catalogue
-* Public Customer Experience
-* SEO Support
+- Storefront API
+- Themes
+- Public Product Catalogue
+- Public Customer Experience
+- SEO Support
 
 **Outcome**
 
@@ -197,25 +197,24 @@ External storefront applications can consume the platform as their backend.
 
 These items are intentionally left open and will be explored as the project matures.
 
-* Multi-store support
-* Warehouse Management
-* Subscription Billing
-* Marketplace Features
-* POS Integration
-* ERP Integration
-* CRM Features
-* AI-assisted commerce
-* Workflow Automation
+- Multi-store support
+- Warehouse Management
+- Subscription Billing
+- Marketplace Features
+- POS Integration
+- ERP Integration
+- CRM Features
+- AI-assisted commerce
+- Workflow Automation
 
 ---
 
 # Guiding Principles
 
-* Domain before implementation.
-* Simplicity before optimisation.
-* Add abstractions only when necessary.
-* Build features incrementally.
-* Keep documentation close to the code.
-* Prefer maintainability over velocity.
-* Avoid deadlines; focus on consistent progress.
-
+- Domain before implementation.
+- Simplicity before optimisation.
+- Add abstractions only when necessary.
+- Build features incrementally.
+- Keep documentation close to the code.
+- Prefer maintainability over velocity.
+- Avoid deadlines; focus on consistent progress.

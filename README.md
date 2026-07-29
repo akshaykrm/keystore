@@ -4,7 +4,7 @@
 
 ## Overview
 
-This project is a long-term effort to build a modern keystore platform capable of supporting businesses ranging from individual merchants to larger organisations.
+This project is a long-term effort to build a modern keystore platform capable of supporting businesses ranging from individual merchants to larger workspaces.
 
 The platform will provide the infrastructure for managing products, customers, orders, users, permissions, integrations, and other commerce-related functionality. Customer-facing storefronts will be separate applications that consume the platform's API.
 
@@ -15,8 +15,8 @@ The focus of this project is on building a solid domain model and maintainable a
 ## Goals
 
 - Build an API-first keystore platform.
-- Support multi-tenancy through organisations (workspaces).
-- Allow users to belong to multiple organisations.
+- Support multi-tenancy through workspaces.
+- Allow users to belong to multiple workspaces.
 - Provide a flexible role and permission system.
 - Design with extensibility in mind for third-party integrations.
 - Maintain a clean, modular architecture that can evolve over time.
@@ -63,7 +63,7 @@ The focus of this project is on building a solid domain model and maintainable a
 
 - Users
 - Authentication
-- Organisations
+- Workspaces
 - Memberships
 - Roles & Permissions
 
