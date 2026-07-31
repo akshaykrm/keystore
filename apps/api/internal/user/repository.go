@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
+	"modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite/lib"
 )
 
 type Repository struct {
@@ -40,11 +43,17 @@ func (r *Repository) Create(newUser User) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("insert user: %w", err)
+		sqliteErr, ok := errors.AsType[*sqlite.Error](err)
+		if ok {
+			switch sqliteErr.Code() {
+			case sqlite3.SQLITE_CONSTRAINT_UNIQUE:
+				return ErrEmailConflict
+			}
+		}
+		return fmt.Errorf("create user: %w", err)
 	}
 
 	return nil
-
 }
 
 func (r *Repository) GetAll() ([]User, error) {
@@ -54,10 +63,10 @@ func (r *Repository) GetAll() ([]User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("query users: %w", err)
 	}
+
 	defer rows.Close()
 
 	var users []User
-
 	for rows.Next() {
 		var user User
 		if err := rows.Scan(
@@ -67,18 +76,16 @@ func (r *Repository) GetAll() ([]User, error) {
 			&user.CreatedAt,
 			&user.UpdatedAt,
 		); err != nil {
-			return nil, fmt.Errorf("Scan users: %w", err)
+			return nil, fmt.Errorf("scan users: %w", err)
 		}
 		users = append(users, user)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("iterate users: %w", err)
-
 	}
 
 	return users, nil
-
 }
 
 func (r *Repository) GetByID(ID string) (User, error) {
@@ -100,7 +107,6 @@ func (r *Repository) GetByID(ID string) (User, error) {
 	}
 
 	return user, nil
-
 }
 
 func (r *Repository) UpdateByID(user User) error {
@@ -113,12 +119,58 @@ func (r *Repository) UpdateByID(user User) error {
 		updated_at = ?
 	WHERE id = ?
 	`
+	result, err := r.db.Exec(query, user.Email, user.Name, user.UpdatedAt, user.ID)
 
-	_, err := r.db.Exec(query, user.Email, user.Name, user.UpdatedAt, user.ID)
-
-	fmt.Println(err)
 	if err != nil {
+		sqliteErr, ok := errors.AsType[*sqlite.Error](err)
+		if ok {
+			switch sqliteErr.Code() {
+			case sqlite3.SQLITE_CONSTRAINT_UNIQUE:
+				return ErrEmailConflict
+			}
+		}
+
 		return fmt.Errorf("update user: %w", err)
 	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return fmt.Errorf("rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrUserNotFound
+	}
+
 	return nil
+}
+
+func (r *Repository) DeleteById(user User) error {
+	query := `
+	UPDATE
+		users
+	SET 
+		deleted_at = ?
+	WHERE
+		id = ?;
+	`
+
+	result, err := r.db.Exec(query, user.DeletedAt, user.ID)
+	if err != nil {
+		return fmt.Errorf("delete user: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return fmt.Errorf("rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrUserNotFound
+	}
+
+	return nil
+
 }

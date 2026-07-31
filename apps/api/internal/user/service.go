@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -25,12 +24,7 @@ func (s *Service) Create(newUser CreateUserInput) error {
 		UpdatedAt: now,
 	}
 
-	fmt.Printf("Creating user Name: %s, Email: %s, Password: %s", user.Name, user.Password, user.Email)
-	if err := s.repo.Create(user); err != nil {
-		return fmt.Errorf("create user: %w", err)
-	}
-
-	return nil
+	return s.repo.Create(user)
 
 }
 
@@ -91,5 +85,17 @@ func (s *Service) UpdateById(ID string, req UpdateUserInput) (UserResponse, erro
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
+}
 
+func (s *Service) DeleteById(ID string) error {
+	user, err := s.repo.GetByID(ID)
+
+	if err != nil {
+		return err
+	}
+
+	now := time.Now().UTC()
+	user.DeletedAt = &now
+
+	return s.repo.DeleteById(user)
 }

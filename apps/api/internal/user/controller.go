@@ -3,7 +3,6 @@ package user
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 )
 
@@ -32,8 +31,12 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.service.Create(user); err != nil {
-		fmt.Println(err)
+		if err == ErrEmailConflict {
+			http.Error(w, "email already exists", http.StatusInternalServerError)
+			return
+		}
 		http.Error(w, "failed to create user", http.StatusInternalServerError)
+		return
 	}
 
 	w.Write([]byte("User Created\n"))
@@ -90,6 +93,10 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 	if _, err := c.service.UpdateById(id, user); err != nil {
 		if errors.Is(err, ErrUserNotFound) {
 			http.Error(w, "user not found", http.StatusNotFound)
+			return
+		}
+		if errors.Is(err, ErrEmailConflict) {
+			http.Error(w, "email already taken", http.StatusNotFound)
 			return
 		}
 		http.Error(w, "failed to update user", http.StatusInternalServerError)
