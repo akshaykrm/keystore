@@ -89,7 +89,7 @@ func (r *Repository) GetAll() ([]User, error) {
 }
 
 func (r *Repository) GetByID(ID string) (User, error) {
-	query := `SELECT id, name, email, created_at, updated_at FROM users WHERE id = ?;`
+	query := `SELECT id, name, email, created_at, updated_at FROM users WHERE id = ? AND deleted_at IS NULL;`
 
 	var user User
 	err := r.db.QueryRow(query, ID).Scan(

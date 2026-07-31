@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/akshaykrm/keystore/apps/api/internal/httpx"
 )
 
 type Controller struct {
@@ -20,7 +22,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid body", http.StatusBadRequest)
+		httpx.WriteJsonError(w, "invalid body", http.StatusBadRequest)
 		return
 	}
 
@@ -31,30 +33,25 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.service.Create(user); err != nil {
-		if err == ErrEmailConflict {
-			http.Error(w, "email already exists", http.StatusInternalServerError)
+		if errors.Is(err, ErrEmailConflict) {
+			httpx.WriteJsonError(w, "email already exists", http.StatusConflict)
 			return
 		}
-		http.Error(w, "failed to create user", http.StatusInternalServerError)
+		httpx.WriteJsonError(w, "failed to create user", http.StatusInternalServerError)
 		return
 	}
 
-	w.Write([]byte("User Created\n"))
+	httpx.WriteJsonSuccess(w, "User Created", http.StatusCreated)
 }
 
 func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	users, err := c.service.GetAll()
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpx.WriteJsonError(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(users); err != nil {
-		return
-	}
+	httpx.WriteJsonSuccess(w, users, http.StatusOK)
 }
 
 func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -64,17 +61,14 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, ErrUserNotFound) {
-			http.Error(w, "User not found", http.StatusNotFound)
+			httpx.WriteJsonError(w, "User not found", http.StatusNotFound)
 			return
 		}
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		httpx.WriteJsonError(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(userResp); err != nil {
-		return
-	}
+	httpx.WriteJsonSuccess(w, userResp, http.StatusOK)
 }
 
 func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +76,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 	var req UpdateUserRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid body", http.StatusBadRequest)
+		httpx.WriteJsonError(w, "invalid body", http.StatusBadRequest)
 	}
 
 	user := UpdateUserInput{
@@ -92,16 +86,29 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 
 	if _, err := c.service.UpdateById(id, user); err != nil {
 		if errors.Is(err, ErrUserNotFound) {
-			http.Error(w, "user not found", http.StatusNotFound)
+			httpx.WriteJsonError(w, "user not found", http.StatusNotFound)
 			return
 		}
 		if errors.Is(err, ErrEmailConflict) {
-			http.Error(w, "email already taken", http.StatusNotFound)
+			httpx.WriteJsonError(w, "email already taken", http.StatusConflict)
 			return
 		}
-		http.Error(w, "failed to update user", http.StatusInternalServerError)
+		httpx.WriteJsonError(w, "failed to update user", http.StatusInternalServerError)
 		return
 	}
 
-	w.Write([]byte("User Updated\n"))
+	httpx.WriteJsonSuccess(w, "User Updated", http.StatusOK)
+}
+
+func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	if err := c.service.DeleteById(id); err != nil {
+		if errors.Is(err, ErrUserNotFound) {
+			httpx.WriteJsonError(w, "user not found", http.StatusNotFound)
+			return
+		}
+		httpx.WriteJsonError(w, "failed to delete user", http.StatusInternalServerError)
+	}
+	httpx.WriteJsonSuccess(w, "User Deleted", http.StatusOK)
 }

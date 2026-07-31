@@ -37,13 +37,7 @@ func (s *Service) GetAll() ([]UserResponse, error) {
 
 	userResponse := make([]UserResponse, 0, len(users))
 	for _, user := range users {
-		userResponse = append(userResponse, UserResponse{
-			ID:        user.ID,
-			Email:     user.Email,
-			Name:      user.Name,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-		})
+		userResponse = append(userResponse, toUserResponse(user))
 	}
 	return userResponse, nil
 }
@@ -54,13 +48,7 @@ func (s *Service) GetByID(ID string) (UserResponse, error) {
 		return UserResponse{}, err
 	}
 
-	return UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}, nil
+	return toUserResponse(user), nil
 }
 
 func (s *Service) UpdateById(ID string, req UpdateUserInput) (UserResponse, error) {
@@ -98,4 +86,14 @@ func (s *Service) DeleteById(ID string) error {
 	user.DeletedAt = &now
 
 	return s.repo.DeleteById(user)
+}
+
+func toUserResponse(user User) UserResponse {
+	return UserResponse{
+		ID:        user.ID,
+		Email:     user.Email,
+		Name:      user.Name,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
 }
