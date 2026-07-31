@@ -57,7 +57,7 @@ func (r *Repository) Create(newUser User) error {
 }
 
 func (r *Repository) GetAll() ([]User, error) {
-	query := `SELECT id, email, name, created_at, updated_at  FROM users;`
+	query := `SELECT id, email, name, created_at, updated_at  FROM users WHERE deleted_at IS NULL;`
 
 	rows, err := r.db.Query(query)
 	if err != nil {

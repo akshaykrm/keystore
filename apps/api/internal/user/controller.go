@@ -22,7 +22,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteJsonError(w, "invalid body", http.StatusBadRequest)
+		httpx.Error(w, "invalid body", http.StatusBadRequest)
 		return
 	}
 
@@ -34,24 +34,33 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := c.service.Create(user); err != nil {
 		if errors.Is(err, ErrEmailConflict) {
-			httpx.WriteJsonError(w, "email already exists", http.StatusConflict)
+			httpx.Error(w, "email already exists", http.StatusConflict)
 			return
 		}
-		httpx.WriteJsonError(w, "failed to create user", http.StatusInternalServerError)
+		httpx.Error(w, "failed to create user", http.StatusInternalServerError)
 		return
 	}
 
-	httpx.WriteJsonSuccess(w, "User Created", http.StatusCreated)
+	resp := httpx.SuccessResponse{
+		Message: "user created",
+	}
+
+	httpx.Write(w, resp, http.StatusCreated)
 }
 
 func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	users, err := c.service.GetAll()
 
 	if err != nil {
-		httpx.WriteJsonError(w, err.Error(), http.StatusInternalServerError)
+		httpx.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	httpx.WriteJsonSuccess(w, users, http.StatusOK)
+	resp := httpx.SuccessResponse{
+		Data:    users,
+		Message: "user list",
+	}
+	httpx.Write(w, resp, http.StatusOK)
 }
 
 func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -61,14 +70,19 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, ErrUserNotFound) {
-			httpx.WriteJsonError(w, "User not found", http.StatusNotFound)
+			httpx.Error(w, "User not found", http.StatusNotFound)
 			return
 		}
-		httpx.WriteJsonError(w, "Internal Server Error", http.StatusInternalServerError)
+		httpx.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	httpx.WriteJsonSuccess(w, userResp, http.StatusOK)
+	resp := httpx.SuccessResponse{
+		Data:    userResp,
+		Message: "user",
+	}
+
+	httpx.Write(w, resp, http.StatusOK)
 }
 
 func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +90,8 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 	var req UpdateUserRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteJsonError(w, "invalid body", http.StatusBadRequest)
+		httpx.Error(w, "invalid body", http.StatusBadRequest)
+		return
 	}
 
 	user := UpdateUserInput{
@@ -86,18 +101,22 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 
 	if _, err := c.service.UpdateById(id, user); err != nil {
 		if errors.Is(err, ErrUserNotFound) {
-			httpx.WriteJsonError(w, "user not found", http.StatusNotFound)
+			httpx.Error(w, "user not found", http.StatusNotFound)
 			return
 		}
 		if errors.Is(err, ErrEmailConflict) {
-			httpx.WriteJsonError(w, "email already taken", http.StatusConflict)
+			httpx.Error(w, "email already taken", http.StatusConflict)
 			return
 		}
-		httpx.WriteJsonError(w, "failed to update user", http.StatusInternalServerError)
+		httpx.Error(w, "failed to update user", http.StatusInternalServerError)
 		return
 	}
 
-	httpx.WriteJsonSuccess(w, "User Updated", http.StatusOK)
+	resp := httpx.SuccessResponse{
+		Message: "user list",
+	}
+
+	httpx.Write(w, resp, http.StatusOK)
 }
 
 func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
@@ -105,10 +124,16 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 
 	if err := c.service.DeleteById(id); err != nil {
 		if errors.Is(err, ErrUserNotFound) {
-			httpx.WriteJsonError(w, "user not found", http.StatusNotFound)
+			httpx.Error(w, "user not found", http.StatusNotFound)
 			return
 		}
-		httpx.WriteJsonError(w, "failed to delete user", http.StatusInternalServerError)
+		httpx.Error(w, "failed to delete user", http.StatusInternalServerError)
+		return
 	}
-	httpx.WriteJsonSuccess(w, "User Deleted", http.StatusOK)
+
+	resp := httpx.SuccessResponse{
+		Message: "user deleted",
+	}
+
+	httpx.Write(w, resp, http.StatusOK)
 }

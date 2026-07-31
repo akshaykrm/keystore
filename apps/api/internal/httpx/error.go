@@ -5,5 +5,6 @@ type ErrorResponse struct {
 }
 
 type SuccessResponse struct {
-	Data any `json:"data"`
+	Message string `json:"message,omitempty"`
+	Data    any    `json:"data,omitempty"`
 }
