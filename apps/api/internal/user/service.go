@@ -2,6 +2,8 @@ package user
 
 import (
 	"time"
+
+	"github.com/akshaykrm/keystore/apps/api/internal/auth"
 )
 
 type Service struct {
@@ -14,10 +16,14 @@ func NewService(r *Repository) *Service {
 
 func (s *Service) Create(newUser CreateUserInput) error {
 	now := time.Now().UTC()
+	hashedPassword, err := auth.HashPassword(newUser.Password)
+	if err != nil {
+		return err
+	}
 
 	user := User{
 		Email:     newUser.Email,
-		Password:  newUser.Password,
+		Password:  hashedPassword,
 		Name:      newUser.Name,
 		CreatedAt: now,
 		UpdatedAt: now,
