@@ -16,7 +16,6 @@ func (s *Service) Create(newUser CreateUserInput) error {
 	now := time.Now().UTC()
 
 	user := User{
-		ID:        "01",
 		Email:     newUser.Email,
 		Password:  newUser.Password,
 		Name:      newUser.Name,

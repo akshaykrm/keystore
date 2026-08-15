@@ -1,7 +1,7 @@
 -- +goose Up
 
 CREATE TABLE users (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     name TEXT NOT NULL,

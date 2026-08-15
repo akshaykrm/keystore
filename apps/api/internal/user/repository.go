@@ -22,19 +22,17 @@ func NewRepository(db *sql.DB) *Repository {
 func (r *Repository) Create(newUser User) error {
 	query := `
 		INSERT INTO users (
-			id,
 			email,
 			password_hash,
 			name,
 			created_at,
 			updated_at
 		) 
-		VALUES (?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?)
 	`
 
 	_, err := r.db.Exec(
 		query,
-		newUser.ID,
 		newUser.Email,
 		newUser.Password,
 		newUser.Name,
@@ -50,6 +48,7 @@ func (r *Repository) Create(newUser User) error {
 				return ErrEmailConflict
 			}
 		}
+		fmt.Println(err)
 		return fmt.Errorf("create user: %w", err)
 	}
 
