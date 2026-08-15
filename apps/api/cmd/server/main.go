@@ -44,6 +44,10 @@ func main() {
 
 	user.RegisterRoutes(mux, userController)
 
-	fmt.Println("Server started on port 5000")
-	http.ListenAndServe(":5000", mux)
+	fmt.Println("Server started on port 3000")
+	err = http.ListenAndServe(":3000", mux)
+
+	if err != nil {
+		fmt.Printf("Failed to start server: %v", err)
+	}
 }
