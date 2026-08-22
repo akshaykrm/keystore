@@ -3,9 +3,9 @@ package user
 import "time"
 
 type CreateUserRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6,max=72"`
+	Name     string `json:"name" validate:"required,min=2,max=100"`
 }
 
 type UpdateUserRequest struct {

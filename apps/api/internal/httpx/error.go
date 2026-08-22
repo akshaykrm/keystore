@@ -1,7 +1,8 @@
 package httpx
 
 type ErrorResponse struct {
-	Error string `json:"error"`
+	Message string `json:"message"`
+	Error   any    `json:"error,omitempty"`
 }
 
 type SuccessResponse struct {

@@ -3,9 +3,13 @@ package user
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"reflect"
+	"strings"
 
 	"github.com/akshaykrm/keystore/apps/api/internal/httpx"
+	"github.com/go-playground/validator/v10"
 )
 
 type Controller struct {
@@ -20,10 +24,45 @@ func NewController(s *Service) *Controller {
 
 func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserRequest
+	validate := validator.New()
+
+	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		if name == "-" {
+			return ""
+		}
+		return name
+	})
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httpx.Error(w, "invalid body", http.StatusBadRequest)
 		return
+	}
+
+	err := validate.Struct(req)
+	if err != nil {
+		var validationError validator.ValidationErrors
+		if errors.As(err, &validationError) {
+			errs := make(map[string]string)
+			for _, v := range validationError {
+				switch v.Tag() {
+				case "required":
+					errs[v.Field()] = "is required"
+				case "email":
+					errs[v.Field()] = "must be valid email"
+				case "min":
+					errs[v.Field()] = fmt.Sprintf("must be at least %s characters", v.Param())
+				case "max":
+					errs[v.Field()] = fmt.Sprintf("must be at most %s characters", v.Param())
+				}
+			}
+			resp := httpx.ErrorResponse{
+				Message: "validation error",
+				Error:   errs,
+			}
+			httpx.Error2(w, resp, http.StatusBadRequest)
+			return
+		}
 	}
 
 	user := CreateUserInput{
