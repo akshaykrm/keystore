@@ -13,20 +13,14 @@ import (
 )
 
 type Controller struct {
-	service *Service
+	service  *Service
+	validate *validator.Validate
 }
 
 func NewController(s *Service) *Controller {
-	return &Controller{
-		service: s,
-	}
-}
+	v := validator.New()
 
-func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
-	var req CreateUserRequest
-	validate := validator.New()
-
-	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
 		if name == "-" {
 			return ""
@@ -34,12 +28,21 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		return name
 	})
 
+	return &Controller{
+		service:  s,
+		validate: v,
+	}
+}
+
+func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
+	var req CreateUserRequest
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httpx.Error(w, "invalid body", http.StatusBadRequest)
 		return
 	}
 
-	err := validate.Struct(req)
+	err := c.validate.Struct(req)
 	if err != nil {
 		var validationError validator.ValidationErrors
 		if errors.As(err, &validationError) {
@@ -133,6 +136,32 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err := c.validate.Struct(req)
+	if err != nil {
+		var validationError validator.ValidationErrors
+		if errors.As(err, &validationError) {
+			errs := make(map[string]string)
+			for _, v := range validationError {
+				switch v.Tag() {
+				case "email":
+					errs[v.Field()] = "must be valid email"
+				case "min":
+					errs[v.Field()] = fmt.Sprintf("must be at least %s characters", v.Param())
+				case "max":
+					errs[v.Field()] = fmt.Sprintf("must be at most %s characters", v.Param())
+
+				}
+			}
+			resp := httpx.ErrorResponse{
+				Message: "validation error",
+				Error:   errs,
+			}
+			httpx.Error2(w, resp, http.StatusBadRequest)
+			return
+		}
+
+	}
+
 	user := UpdateUserInput{
 		Email: req.Email,
 		Name:  req.Name,
@@ -152,7 +181,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := httpx.SuccessResponse{
-		Message: "user list",
+		Message: "user updated",
 	}
 
 	httpx.Write(w, resp, http.StatusOK)

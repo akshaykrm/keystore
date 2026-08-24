@@ -9,8 +9,8 @@ type CreateUserRequest struct {
 }
 
 type UpdateUserRequest struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
+	Email string `json:"email" validate:"omitempty,email"`
+	Name  string `json:"name" validate:"omitempty,min=2,max=100"`
 }
 
 type UserResponse struct {
