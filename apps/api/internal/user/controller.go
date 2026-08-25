@@ -74,7 +74,8 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		Name:     req.Name,
 	}
 
-	if err := c.service.Create(user); err != nil {
+	token, err := c.service.Create(user)
+	if err != nil {
 		if errors.Is(err, ErrEmailConflict) {
 			httpx.Error(w, "email already exists", http.StatusConflict)
 			return
@@ -84,6 +85,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := httpx.SuccessResponse{
+		Data:    token,
 		Message: "user created",
 	}
 

@@ -2,20 +2,32 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/akshaykrm/keystore/apps/api/internal/auth"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func main() {
-	password := "test"
-	hashed, err := auth.HashPassword(password)
+	fmt.Println("Token generation checking: ")
+
+	issuedAt := time.Now()
+	expiresAt := issuedAt.Add(24 * time.Hour)
+	claims := auth.Claims{
+		User:      "test@gmail.com",
+		IssuedAt:  jwt.NewNumericDate(issuedAt),
+		ExpiresAt: jwt.NewNumericDate(expiresAt),
+	}
+
+	token, _ := auth.CreateNewToken(claims)
+	fmt.Println("Gen Token: ", token)
+	parsedClaims, err := auth.ParseToken(token)
 
 	if err != nil {
-		fmt.Printf("hashing failed %v", err)
-		return
+		fmt.Println(err)
 	}
-	fmt.Printf("Hashed Password: %s\n", hashed)
+	fmt.Println("Claims: ", parsedClaims.ExpiresAt, parsedClaims.IssuedAt, parsedClaims.User)
 
-	err = auth.CompareHashedPassword(hashed, "test2")
-	fmt.Println(err)
+	fmt.Println("Token generation checking done!!! ")
+
 }

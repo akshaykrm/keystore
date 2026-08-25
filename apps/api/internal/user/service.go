@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/akshaykrm/keystore/apps/api/internal/auth"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Service struct {
@@ -14,11 +15,11 @@ func NewService(r *Repository) *Service {
 	return &Service{repo: r}
 }
 
-func (s *Service) Create(newUser CreateUserInput) error {
+func (s *Service) Create(newUser CreateUserInput) (string, error) {
 	now := time.Now().UTC()
 	hashedPassword, err := auth.HashPassword(newUser.Password)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	user := User{
@@ -29,7 +30,23 @@ func (s *Service) Create(newUser CreateUserInput) error {
 		UpdatedAt: now,
 	}
 
-	return s.repo.Create(user)
+	if err := s.repo.Create(user); err != nil {
+		return "", err
+	}
+
+	issuedAt := time.Now()
+	expiresAt := issuedAt.Add(24 * time.Hour)
+	claims := auth.Claims{
+		User:      newUser.Email,
+		IssuedAt:  jwt.NewNumericDate(issuedAt),
+		ExpiresAt: jwt.NewNumericDate(expiresAt),
+	}
+	token, err := auth.CreateNewToken(claims)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 
 }
 
