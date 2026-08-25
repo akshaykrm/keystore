@@ -8,4 +8,7 @@ func RegisterRoutes(mux *http.ServeMux, controller *Controller) {
 	mux.HandleFunc("PUT /users/{id}", controller.UpdateById)
 	mux.HandleFunc("POST /users", controller.Create)
 	mux.HandleFunc("DELETE /users/{id}", controller.DeleteById)
+
+	mux.HandleFunc("POST /login", controller.Login)
+
 }

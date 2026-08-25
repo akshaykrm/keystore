@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/akshaykrm/keystore/apps/api/internal/auth"
@@ -15,11 +16,11 @@ func NewService(r *Repository) *Service {
 	return &Service{repo: r}
 }
 
-func (s *Service) Create(newUser CreateUserInput) (string, error) {
+func (s *Service) Create(newUser CreateUserInput) error {
 	now := time.Now().UTC()
 	hashedPassword, err := auth.HashPassword(newUser.Password)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	user := User{
@@ -30,23 +31,7 @@ func (s *Service) Create(newUser CreateUserInput) (string, error) {
 		UpdatedAt: now,
 	}
 
-	if err := s.repo.Create(user); err != nil {
-		return "", err
-	}
-
-	issuedAt := time.Now()
-	expiresAt := issuedAt.Add(24 * time.Hour)
-	claims := auth.Claims{
-		User:      newUser.Email,
-		IssuedAt:  jwt.NewNumericDate(issuedAt),
-		ExpiresAt: jwt.NewNumericDate(expiresAt),
-	}
-	token, err := auth.CreateNewToken(claims)
-	if err != nil {
-		return "", err
-	}
-
-	return token, nil
+	return s.repo.Create(user)
 
 }
 
@@ -62,6 +47,39 @@ func (s *Service) GetAll() ([]UserResponse, error) {
 		userResponse = append(userResponse, toUserResponse(user))
 	}
 	return userResponse, nil
+}
+
+func (s *Service) Login(loginReq LoginRequest) (string, error) {
+	user, err := s.repo.GetPasswordByEmail(loginReq.Email)
+	if err != nil {
+		return "", err
+	}
+
+	if err := auth.CompareHashedPassword(user.Password, loginReq.Password); err != nil {
+		return "", fmt.Errorf("Password check failed: %w", err)
+	}
+
+	issuedAt := time.Now()
+	expiresAt := issuedAt.Add(24 * time.Hour)
+	claims := auth.Claims{
+		User:      user.Email,
+		IssuedAt:  jwt.NewNumericDate(issuedAt),
+		ExpiresAt: jwt.NewNumericDate(expiresAt),
+	}
+	token, err := auth.CreateNewToken(claims)
+	if err != nil {
+
+		return "", fmt.Errorf("Token generation failed: %w", err)
+	}
+	return token, nil
+}
+
+func (s *Service) GetByEmail(Email string) (UserResponse, error) {
+	user, err := s.repo.GetByEmail(Email)
+	if err != nil {
+		return UserResponse{}, err
+	}
+	return toUserResponse(user), nil
 }
 
 func (s *Service) GetByID(ID string) (UserResponse, error) {

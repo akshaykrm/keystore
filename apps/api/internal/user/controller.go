@@ -34,6 +34,32 @@ func NewController(s *Service) *Controller {
 	}
 }
 
+func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
+	var loginReq LoginRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&loginReq); err != nil {
+		httpx.Error(w, "invalid body", http.StatusBadRequest)
+		return
+	}
+
+	token, err := c.service.Login(loginReq)
+	if err != nil {
+		res := httpx.ErrorResponse{
+			Message: "Authentication Failed",
+			Error:   err.Error(),
+		}
+		httpx.Error2(w, res, http.StatusNotFound)
+		return
+
+	}
+
+	res := httpx.SuccessResponse{
+		Message: "Login route",
+		Data:    LoginResponse{token},
+	}
+	httpx.Write(w, res, http.StatusOK)
+}
+
 func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserRequest
 
@@ -74,18 +100,9 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		Name:     req.Name,
 	}
 
-	token, err := c.service.Create(user)
-	if err != nil {
-		if errors.Is(err, ErrEmailConflict) {
-			httpx.Error(w, "email already exists", http.StatusConflict)
-			return
-		}
-		httpx.Error(w, "failed to create user", http.StatusInternalServerError)
-		return
-	}
+	err = c.service.Create(user)
 
 	resp := httpx.SuccessResponse{
-		Data:    token,
 		Message: "user created",
 	}
 

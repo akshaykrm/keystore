@@ -87,6 +87,45 @@ func (r *Repository) GetAll() ([]User, error) {
 	return users, nil
 }
 
+func (r *Repository) GetPasswordByEmail(Email string) (User, error) {
+	query := `SELECT id, password_hash, email FROM users WHERE email = ? AND deleted_at IS NULL;`
+	var user User
+	err := r.db.QueryRow(query, Email).Scan(
+		&user.ID,
+		&user.Password,
+		&user.Email,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return User{}, ErrUserNotFound
+		}
+		return User{}, fmt.Errorf("get user: %w", err)
+	}
+
+	return user, nil
+}
+func (r *Repository) GetByEmail(Email string) (User, error) {
+	query := `SELECT id, name, email, created_at, updated_at FROM users WHERE email = ? AND deleted_at IS NULL;`
+
+	var user User
+	err := r.db.QueryRow(query, Email).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return User{}, ErrUserNotFound
+		}
+		return User{}, fmt.Errorf("get user: %w", err)
+	}
+
+	return user, nil
+
+}
 func (r *Repository) GetByID(ID string) (User, error) {
 	query := `SELECT id, name, email, created_at, updated_at FROM users WHERE id = ? AND deleted_at IS NULL;`
 

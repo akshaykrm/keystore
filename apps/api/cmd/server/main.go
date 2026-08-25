@@ -44,6 +44,9 @@ func main() {
 
 	user.RegisterRoutes(mux, userController)
 
+	// authController := auth.NewController()
+	// auth.RegisterRoutes(mux, authController)
+
 	fmt.Println("Server started on port 3000")
 	err = http.ListenAndServe(":3000", mux)
 
