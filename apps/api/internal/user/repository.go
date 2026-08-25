@@ -97,14 +97,12 @@ func (r *Repository) GetPasswordByEmail(Email string) (User, error) {
 	)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, ErrUserNotFound
-		}
-		return User{}, fmt.Errorf("get user: %w", err)
+		return User{}, ErrUserNotFound
 	}
 
 	return user, nil
 }
+
 func (r *Repository) GetByEmail(Email string) (User, error) {
 	query := `SELECT id, name, email, created_at, updated_at FROM users WHERE email = ? AND deleted_at IS NULL;`
 
