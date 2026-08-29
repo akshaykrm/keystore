@@ -1,33 +1,89 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
-	"github.com/akshaykrm/keystore/apps/api/internal/auth"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/akshaykrm/keystore/apps/api/internal/user/workspace"
+	_ "modernc.org/sqlite"
 )
 
-func main() {
-	fmt.Println("Token generation checking: ")
+func Connect() (*sql.DB, error) {
+	db, err := sql.Open("sqlite", "./db/keystore.db")
 
-	issuedAt := time.Now()
-	expiresAt := issuedAt.Add(24 * time.Hour)
-	claims := auth.Claims{
-		User:      "test@gmail.com",
-		IssuedAt:  jwt.NewNumericDate(issuedAt),
-		ExpiresAt: jwt.NewNumericDate(expiresAt),
+	if err != nil {
+		return nil, err
 	}
 
-	token, _ := auth.CreateNewToken(claims)
-	fmt.Println("Gen Token: ", token)
-	parsedClaims, err := auth.ParseToken(token)
+	if err := db.Ping(); err != nil {
+		db.Close()
+		return nil, err
+	}
+
+	return db, nil
+}
+
+func main() {
+	db, err := Connect()
+
+	if err != nil {
+		fmt.Printf("Connecting to db failed: %v", err)
+	}
+
+	workspaceRepository := workspace.NewRepository(db)
+	data := workspace.Workspace{
+		Name:      "Test",
+		Slug:      "name",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	err = workspaceRepository.Create(data)
 
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
-	fmt.Println("Claims: ", parsedClaims.ExpiresAt, parsedClaims.IssuedAt, parsedClaims.User)
+	fmt.Println("Workspace inserted")
 
-	fmt.Println("Token generation checking done!!! ")
+	workspaces, err := workspaceRepository.GetAll()
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	fmt.Println("workspace list: ", len(workspaces))
+
+	workspaceById, err := workspaceRepository.GetById("1")
+
+	if err != nil {
+		fmt.Printf("get by id failed :%v\n", workspaceById)
+	}
+
+	fmt.Println("workspace: ", workspaceById)
+	updated := workspace.Workspace{
+		ID:        "1",
+		Name:      "Test updated",
+		Slug:      "name updated",
+		UpdatedAt: time.Now(),
+	}
+
+	err = workspaceRepository.UpdateById(updated)
+	if err != nil {
+		fmt.Printf("update failed: %v", err)
+	} else {
+		fmt.Println("updated workspace")
+	}
+
+	deleteItem := workspace.Workspace{
+		ID: "1",
+	}
+	err = workspaceRepository.DeleteById(deleteItem)
+	if err != nil {
+		fmt.Printf("delete failed: %v", err)
+	} else {
+		fmt.Println("delete workspace")
+	}
 
 }

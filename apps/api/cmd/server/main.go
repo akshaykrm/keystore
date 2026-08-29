@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/akshaykrm/keystore/apps/api/internal/user"
+	"github.com/akshaykrm/keystore/apps/api/internal/workspace"
 	_ "modernc.org/sqlite"
 
 	"fmt"
@@ -44,6 +45,11 @@ func main() {
 
 	user.RegisterRoutes(mux, userController)
 
+	workspaceRepo := workspace.NewRepository(db)
+	workspaceService := workspace.NewService(workspaceRepo)
+	workspaceController := workspace.NewController(workspaceService)
+
+	workspace.RegisterRoutes(mux, workspaceController)
 	// authController := auth.NewController()
 	// auth.RegisterRoutes(mux, authController)
 
