@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/akshaykrm/keystore/apps/api/internal/user/workspace"
+	"github.com/akshaykrm/keystore/apps/api/internal/workspace"
 	_ "modernc.org/sqlite"
 )
 
@@ -79,6 +79,7 @@ func main() {
 	deleteItem := workspace.Workspace{
 		ID: "1",
 	}
+
 	err = workspaceRepository.DeleteById(deleteItem)
 	if err != nil {
 		fmt.Printf("delete failed: %v", err)

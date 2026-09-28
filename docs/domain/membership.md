@@ -12,6 +12,12 @@ There are currently two roles a membership can have:
 1. Owner
 2. Member
 
+Owner is the one who created the workspace or is given the role of owner
+default to the creator
+Member is the one who have access to the workspaces
+
+Based on this currently membership only needs id, role, user_id, workspace_id
+
 ---
 
 ### Future
