@@ -20,5 +20,4 @@ func (s *Service) Create(newMembership CreateMembershipInput) error {
 	}
 
 	err := s.repo.Create(membership)
-
 }

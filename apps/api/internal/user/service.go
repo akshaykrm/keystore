@@ -34,7 +34,9 @@ func (s *Service) Create(newUser CreateUserInput) error {
 	//TODO: after creating a user also create a workspace for the user
 	//TODO: after creating the workspace add a record in the membership table with owner role
 
-	return s.repo.Create(user)
+	if err:= return s.repo.Create(user); err!= {
+		return err
+	}
 
 }
 
