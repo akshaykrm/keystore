@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/akshaykrm/keystore/apps/api/internal/auth"
 	"github.com/akshaykrm/keystore/apps/api/internal/httpx"
 	"github.com/go-playground/validator/v10"
 )
@@ -119,6 +120,13 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
+	claims, ok := auth.GetClaims(r)
+	if !ok {
+		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	fmt.Println(claims)
 	users, err := c.service.GetAll()
 
 	if err != nil {
