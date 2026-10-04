@@ -39,17 +39,17 @@ func main() {
 		w.Write([]byte("API is live\n"))
 	})
 
-	userRepo := user.NewRepository(db)
-	userService := user.NewService(userRepo)
-	userController := user.NewController(userService)
-
-	user.RegisterRoutes(mux, userController)
-
 	workspaceRepo := workspace.NewRepository(db)
 	workspaceService := workspace.NewService(workspaceRepo)
 	workspaceController := workspace.NewController(workspaceService)
 
 	workspace.RegisterRoutes(mux, workspaceController)
+
+	userRepo := user.NewRepository(db)
+	userService := user.NewService(userRepo, workspaceService)
+	userController := user.NewController(userService)
+
+	user.RegisterRoutes(mux, userController)
 	// authController := auth.NewController()
 	// auth.RegisterRoutes(mux, authController)
 

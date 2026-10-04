@@ -1,6 +1,7 @@
 package workspace
 
 import (
+	"strings"
 	"time"
 )
 
@@ -12,6 +13,17 @@ func NewService(r *Repository) *Service {
 	return &Service{
 		repo: r,
 	}
+}
+
+func (s *Service) CreateDefaultWorkspaceForUser(name string) error {
+	workspaceName := name + "s" + " " + "Workspace"
+	workspaceSlug := strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(workspaceName), "'", " "), " ", "-")
+
+	payload := CreateWorkspacePayload{
+		Name: workspaceName,
+		Slug: workspaceSlug,
+	}
+	return s.Create(payload)
 }
 
 func (s *Service) Create(w CreateWorkspacePayload) error {

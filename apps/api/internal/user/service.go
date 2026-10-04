@@ -9,11 +9,12 @@ import (
 )
 
 type Service struct {
-	repo *Repository
+	repo      *Repository
+	workspace workspaceCreator
 }
 
-func NewService(r *Repository) *Service {
-	return &Service{repo: r}
+func NewService(r *Repository, w workspaceCreator) *Service {
+	return &Service{repo: r, workspace: w}
 }
 
 func (s *Service) Create(newUser CreateUserInput) error {
@@ -31,13 +32,17 @@ func (s *Service) Create(newUser CreateUserInput) error {
 		UpdatedAt: now,
 	}
 
-	//TODO: after creating a user also create a workspace for the user
-	//TODO: after creating the workspace add a record in the membership table with owner role
-
-	if err:= return s.repo.Create(user); err!= {
+	if err := s.repo.Create(user); err != nil {
 		return err
 	}
 
+	if err := s.workspace.CreateDefaultWorkspaceForUser(newUser.Name); err != nil {
+		return err
+	}
+
+	//TODO: after creating the workspace add a record in the membership table with owner role
+
+	return nil
 }
 
 func (s *Service) GetAll() ([]UserResponse, error) {

@@ -40,3 +40,7 @@ type UpdateUserInput struct {
 	Email string
 	Name  string
 }
+
+type workspaceCreator interface {
+	CreateDefaultWorkspaceForUser(name string) error
+}
