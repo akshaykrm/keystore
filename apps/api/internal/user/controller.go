@@ -42,6 +42,15 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err := c.validate.Struct(loginReq)
+	if err != nil {
+		resp := httpx.ErrorResponse{
+			Message: "validation error",
+		}
+		httpx.Error2(w, resp, http.StatusBadRequest)
+		return
+	}
+
 	token, err := c.service.Login(loginReq)
 	if err != nil {
 		res := httpx.ErrorResponse{
