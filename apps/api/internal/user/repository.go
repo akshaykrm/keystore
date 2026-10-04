@@ -19,7 +19,7 @@ func NewRepository(db *sql.DB) *Repository {
 	}
 }
 
-func (r *Repository) Create(newUser User) error {
+func (r *Repository) Create(newUser User) (User, error) {
 	query := `
 		INSERT INTO users (
 			email,
@@ -29,9 +29,10 @@ func (r *Repository) Create(newUser User) error {
 			updated_at
 		) 
 		VALUES (?, ?, ?, ?, ?)
+		RETURNING id, email, name, created_at, updated_at
 	`
 
-	_, err := r.db.Exec(
+	row := r.db.QueryRow(
 		query,
 		newUser.Email,
 		newUser.Password,
@@ -40,19 +41,26 @@ func (r *Repository) Create(newUser User) error {
 		newUser.UpdatedAt,
 	)
 
-	if err != nil {
+	created := User{}
+	if err := row.Scan(
+		&created.ID,
+		&created.Email,
+		&created.Name,
+		&created.CreatedAt,
+		&created.UpdatedAt,
+	); err != nil {
 		sqliteErr, ok := errors.AsType[*sqlite.Error](err)
 		if ok {
 			switch sqliteErr.Code() {
 			case sqlite3.SQLITE_CONSTRAINT_UNIQUE:
-				return ErrEmailConflict
+				return created, ErrEmailConflict
 			}
 		}
 		fmt.Println(err)
-		return fmt.Errorf("create user: %w", err)
+		return created, fmt.Errorf("create user: %w", err)
 	}
 
-	return nil
+	return created, nil
 }
 
 func (r *Repository) GetAll() ([]User, error) {

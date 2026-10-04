@@ -9,15 +9,21 @@ import (
 )
 
 type Service struct {
-	repo      *Repository
-	workspace workspaceCreator
+	repo       *Repository
+	workspace  workspaceCreator
+	membership membershiptCreator
 }
 
-func NewService(r *Repository, w workspaceCreator) *Service {
-	return &Service{repo: r, workspace: w}
+func NewService(r *Repository, w workspaceCreator, m membershiptCreator) *Service {
+	return &Service{
+		repo:       r,
+		workspace:  w,
+		membership: m,
+	}
 }
 
 func (s *Service) Create(newUser CreateUserInput) error {
+	fmt.Println("Creating User %s", newUser.Name)
 	now := time.Now().UTC()
 	hashedPassword, err := auth.HashPassword(newUser.Password)
 	if err != nil {
@@ -32,16 +38,24 @@ func (s *Service) Create(newUser CreateUserInput) error {
 		UpdatedAt: now,
 	}
 
-	if err := s.repo.Create(user); err != nil {
+	createdUser, err := s.repo.Create(user)
+	fmt.Printf("User Created with ID: %s \n", createdUser.ID)
+	if err != nil {
+		fmt.Printf("User create failed %w", err)
 		return err
 	}
 
-	if err := s.workspace.CreateDefaultWorkspaceForUser(newUser.Name); err != nil {
+	workspaceID, err := s.workspace.CreateDefaultWorkspaceForUser(createdUser.Name)
+	if err != nil {
+		fmt.Printf("Workspace create failed %w", err)
 		return err
 	}
 
-	//TODO: after creating the workspace add a record in the membership table with owner role
+	fmt.Printf("Workspace Created with ID: %s \n", workspaceID)
 
+	if err := s.membership.CreateDefaultMembership(workspaceID, createdUser.ID); err != nil {
+		return err
+	}
 	return nil
 }
 

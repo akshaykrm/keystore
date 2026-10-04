@@ -48,8 +48,9 @@ func (r *Repository) Create(newMembership Membership) error {
 				return ErrMemberShipConflict
 			}
 		}
-		fmt.Println(err)
 		return fmt.Errorf("create membership: %w", err)
 	}
+
+	return nil
 
 }

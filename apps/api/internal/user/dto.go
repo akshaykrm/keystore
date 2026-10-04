@@ -42,5 +42,9 @@ type UpdateUserInput struct {
 }
 
 type workspaceCreator interface {
-	CreateDefaultWorkspaceForUser(name string) error
+	CreateDefaultWorkspaceForUser(name string) (string, error)
+}
+
+type membershiptCreator interface {
+	CreateDefaultMembership(workspacID, userID string) error
 }

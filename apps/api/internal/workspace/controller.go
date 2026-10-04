@@ -66,7 +66,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		Slug: payload.Slug,
 	}
 
-	if err := c.service.Create(workspace); err != nil {
+	if _, err := c.service.Create(workspace); err != nil {
 		httpx.Json(w, httpx.Response{
 			Message: "something went wrong while creating workspace",
 			Status:  http.StatusInternalServerError,

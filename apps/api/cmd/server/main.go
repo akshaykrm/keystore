@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/akshaykrm/keystore/apps/api/internal/membership"
 	"github.com/akshaykrm/keystore/apps/api/internal/user"
 	"github.com/akshaykrm/keystore/apps/api/internal/workspace"
 	_ "modernc.org/sqlite"
@@ -43,15 +44,16 @@ func main() {
 	workspaceService := workspace.NewService(workspaceRepo)
 	workspaceController := workspace.NewController(workspaceService)
 
-	workspace.RegisterRoutes(mux, workspaceController)
+	membershipRepo := membership.NewRepository(db)
+	membershipService := membership.NewService(membershipRepo)
 
 	userRepo := user.NewRepository(db)
-	userService := user.NewService(userRepo, workspaceService)
+	userService := user.NewService(userRepo, workspaceService, membershipService)
 	userController := user.NewController(userService)
 
+	// Register Roues
 	user.RegisterRoutes(mux, userController)
-	// authController := auth.NewController()
-	// auth.RegisterRoutes(mux, authController)
+	workspace.RegisterRoutes(mux, workspaceController)
 
 	fmt.Println("Server started on port 3000")
 	err = http.ListenAndServe(":3000", mux)

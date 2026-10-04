@@ -16,7 +16,7 @@ func NewRepository(db *sql.DB) *Repository {
 	}
 }
 
-func (r *Repository) Create(w Workspace) error {
+func (r *Repository) Create(w Workspace) (Workspace, error) {
 	query := `
 		INSERT INTO workspaces (
 			name,
@@ -25,18 +25,23 @@ func (r *Repository) Create(w Workspace) error {
 			updated_at
 		) 
 		VALUES (?, ?, ?, ?)
+		RETURNING id, name, slug, created_at, updated_at
 	`
 
-	result, err := r.db.Exec(query, w.Name, w.Slug, w.CreatedAt, w.UpdatedAt)
+	row := r.db.QueryRow(query, w.Name, w.Slug, w.CreatedAt, w.UpdatedAt)
 
-	if err != nil {
-		return fmt.Errorf("Insert workspace failed: %w", err)
+	created := Workspace{}
+	if err := row.Scan(
+		&created.ID,
+		&created.Name,
+		&created.Slug,
+		&created.CreatedAt,
+		&created.UpdatedAt,
+	); err != nil {
+		return created, fmt.Errorf("Insert workspace failed: %w", err)
 	}
 
-	affected, err := result.RowsAffected()
-	fmt.Println("Rows inserted: ", affected, err)
-
-	return nil
+	return created, nil
 }
 
 func (r *Repository) GetAll() ([]Workspace, error) {

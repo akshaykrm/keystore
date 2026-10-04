@@ -15,7 +15,7 @@ func NewService(r *Repository) *Service {
 	}
 }
 
-func (s *Service) CreateDefaultWorkspaceForUser(name string) error {
+func (s *Service) CreateDefaultWorkspaceForUser(name string) (string, error) {
 	workspaceName := name + "s" + " " + "Workspace"
 	workspaceSlug := strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(workspaceName), "'", " "), " ", "-")
 
@@ -23,10 +23,11 @@ func (s *Service) CreateDefaultWorkspaceForUser(name string) error {
 		Name: workspaceName,
 		Slug: workspaceSlug,
 	}
-	return s.Create(payload)
+	created, err := s.Create(payload)
+	return created.ID, err
 }
 
-func (s *Service) Create(w CreateWorkspacePayload) error {
+func (s *Service) Create(w CreateWorkspacePayload) (Workspace, error) {
 	workspace := Workspace{
 		Name: w.Name,
 		Slug: w.Slug,
