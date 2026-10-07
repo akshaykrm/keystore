@@ -44,21 +44,27 @@ func (r *Repository) Create(w Workspace) (Workspace, error) {
 	return created, nil
 }
 
-func (r *Repository) GetAll() ([]Workspace, error) {
+func (r *Repository) GetAll(filter ListWorkspaceFilter) ([]Workspace, error) {
 	query := `
 		SELECT 
-			id,
-			name,
-			slug,
-			created_at,
-			updated_at
+			w.id,
+			w.name,
+			w.slug,
+			w.created_at,
+			w.updated_at
 		FROM
-			workspaces
+			workspaces w
+		INNER JOIN
+			memberships m ON w.id = m.workspace_id
+
 		WHERE
-			deleted_at IS NULL
+			m.user_id = ?
+		AND
+			w.deleted_at IS NULL
 	`
 
-	rows, err := r.db.Query(query)
+	args := []any{filter.UserID}
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("query workspaces: %w", err)
 	}

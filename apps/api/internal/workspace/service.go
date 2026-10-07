@@ -36,8 +36,8 @@ func (s *Service) Create(w CreateWorkspacePayload) (Workspace, error) {
 	return s.repo.Create(workspace)
 }
 
-func (s *Service) GetAll() ([]WorkspaceList, error) {
-	workspaces, err := s.repo.GetAll()
+func (s *Service) GetAll(filter ListWorkspaceFilter) ([]WorkspaceList, error) {
+	workspaces, err := s.repo.GetAll(filter)
 
 	if err != nil {
 		return nil, err

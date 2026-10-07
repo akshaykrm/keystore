@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/akshaykrm/keystore/apps/api/internal/auth"
 	"github.com/akshaykrm/keystore/apps/api/internal/httpx"
 	"github.com/go-playground/validator/v10"
 )
@@ -82,8 +83,16 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
-	workspaces, err := c.service.GetAll()
-
+	claims, ok := auth.GetClaims(r)
+	if !ok {
+		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
+		return
+	}
+	fmt.Println("Claims:", claims.ID)
+	filter := ListWorkspaceFilter{
+		UserID: claims.ID,
+	}
+	workspaces, err := c.service.GetAll(filter)
 	if err != nil {
 		httpx.Json(w, httpx.Response{
 			Message: "something went wrong while retrieving workspaces",

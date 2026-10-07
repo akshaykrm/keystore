@@ -87,6 +87,7 @@ func (s *Service) Login(loginReq LoginRequest) (string, error) {
 	expiresAt := issuedAt.Add(24 * time.Hour)
 	claims := auth.Claims{
 		User:      user.Email,
+		ID:        user.ID,
 		IssuedAt:  jwt.NewNumericDate(issuedAt),
 		ExpiresAt: jwt.NewNumericDate(expiresAt),
 	}
