@@ -19,6 +19,7 @@ func (s *Service) CreateDefaultMembership(workspaceID, userID string) error {
 		UserID:      userID,
 		Role:        RoleOwner,
 	}
+	fmt.Println(payload, userID)
 	return s.Create(payload)
 }
 

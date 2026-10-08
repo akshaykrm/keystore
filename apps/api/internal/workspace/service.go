@@ -5,13 +5,19 @@ import (
 	"time"
 )
 
-type Service struct {
-	repo *Repository
+type membershiptCreator interface {
+	CreateDefaultMembership(workspacID, userID string) error
 }
 
-func NewService(r *Repository) *Service {
+type Service struct {
+	repo       *Repository
+	membership membershiptCreator
+}
+
+func NewService(r *Repository, m membershiptCreator) *Service {
 	return &Service{
-		repo: r,
+		repo:       r,
+		membership: m,
 	}
 }
 
@@ -33,7 +39,12 @@ func (s *Service) Create(w CreateWorkspacePayload) (Workspace, error) {
 		Slug: w.Slug,
 	}
 
-	return s.repo.Create(workspace)
+	workspace, err := s.repo.Create(workspace)
+	if err != nil {
+		return Workspace{}, err
+	}
+	return Workspace{}, s.membership.CreateDefaultMembership(workspace.ID, w.UserId)
+
 }
 
 func (s *Service) GetAll(filter ListWorkspaceFilter) ([]WorkspaceList, error) {

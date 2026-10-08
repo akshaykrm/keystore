@@ -1,8 +1,5 @@
 ## In Progress
 
-- [ ] Users should be able to create their workspaces
-      For this need to create controller for workspaces I think we can have it seperate
-
 ---
 
 ## Current Status
@@ -11,6 +8,8 @@
 - [x] Create middleware to protect routes
 - [x] Authenticate user from token
 - [x] Users should be able to list their workspaces
+- [x] Users should be able to create their workspaces
+- [x] Users should be able to view a single workspace
 
 ## Next Steps
 
@@ -18,7 +17,6 @@
 
 ## Backlog
 
-- [ ] Users should be able to view a single workspace
 - [ ] Users should be able to edit their workspaces
 - [ ] Users should be able to delete/archive their workspaces
 - [ ] Users should be able to add new members to their workspaces

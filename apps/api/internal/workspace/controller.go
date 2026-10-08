@@ -42,6 +42,12 @@ func (v ValidationErrors) Error() string {
 }
 
 func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
+	claims, ok := auth.GetClaims(r)
+	if !ok {
+		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	var payload createWorkspaceRequestBody
 
 	if err := httpx.Decode(r.Body, &payload); err != nil {
@@ -63,8 +69,9 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	workspace := CreateWorkspacePayload{
-		Name: payload.Name,
-		Slug: payload.Slug,
+		Name:   payload.Name,
+		Slug:   payload.Slug,
+		UserId: claims.ID,
 	}
 
 	if _, err := c.service.Create(workspace); err != nil {

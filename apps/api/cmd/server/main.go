@@ -40,12 +40,12 @@ func main() {
 		w.Write([]byte("API is live\n"))
 	})
 
-	workspaceRepo := workspace.NewRepository(db)
-	workspaceService := workspace.NewService(workspaceRepo)
-	workspaceController := workspace.NewController(workspaceService)
-
 	membershipRepo := membership.NewRepository(db)
 	membershipService := membership.NewService(membershipRepo)
+
+	workspaceRepo := workspace.NewRepository(db)
+	workspaceService := workspace.NewService(workspaceRepo, membershipService)
+	workspaceController := workspace.NewController(workspaceService)
 
 	userRepo := user.NewRepository(db)
 	userService := user.NewService(userRepo, workspaceService, membershipService)

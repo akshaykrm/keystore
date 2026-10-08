@@ -3,8 +3,9 @@ package workspace
 import "time"
 
 type CreateWorkspacePayload struct {
-	Name string
-	Slug string
+	Name   string
+	Slug   string
+	UserId string
 }
 
 type UpdateWorkspaceInput struct {
