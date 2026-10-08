@@ -88,7 +88,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
 		return
 	}
-	fmt.Println("Claims:", claims.ID)
+
 	filter := ListWorkspaceFilter{
 		UserID: claims.ID,
 	}
@@ -112,8 +112,13 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue(("id"))
+	claims, ok := auth.GetClaims(r)
+	if !ok {
+		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
+		return
+	}
 
-	workspace, err := c.service.GetById(id)
+	workspace, err := c.service.GetById(id, claims.ID)
 
 	if err != nil {
 		if errors.Is(err, ErrWorkspaceNotFound) {

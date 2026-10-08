@@ -127,6 +127,46 @@ func (r *Repository) GetById(ID string) (Workspace, error) {
 	return workspace, nil
 }
 
+func (r *Repository) GetByIdAndUser(id, userID string) (*Workspace, error) {
+	query := `SELECT 
+			w.id,
+			w.name,
+			w.slug,
+			w.created_at,
+			w.updated_at 
+		FROM 
+			workspaces w
+		INNER JOIN 
+			memberships m
+		ON 
+			w.id = m.workspace_id
+			
+		WHERE 
+			w.id = ? 
+		AND
+			m.user_id = ?
+		AND 
+			w.deleted_at IS NULL;`
+
+	row := r.db.QueryRow(query, id, userID)
+	var workspace Workspace
+
+	if err := row.Scan(
+		&workspace.ID,
+		&workspace.Name,
+		&workspace.Slug,
+		&workspace.CreatedAt,
+		&workspace.UpdatedAt,
+	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrWorkspaceNotFound
+		}
+		return nil, fmt.Errorf("Failed to query workspaces: %w", err)
+	}
+
+	return &workspace, nil
+}
+
 func (r *Repository) UpdateById(w Workspace) error {
 	query := `
 		UPDATE 

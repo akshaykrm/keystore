@@ -51,14 +51,12 @@ func (s *Service) GetAll(filter ListWorkspaceFilter) ([]WorkspaceList, error) {
 
 }
 
-func (s *Service) GetById(ID string) (WorkspaceList, error) {
-	workspace, err := s.repo.GetById(ID)
+func (s *Service) GetById(ID, userId string) (WorkspaceList, error) {
+	workspace, err := s.repo.GetByIdAndUser(ID, userId)
 	if err != nil {
 		return WorkspaceList{}, err
 	}
-
-	return toWorkspaceResponse(workspace), nil
-
+	return toWorkspaceResponse(*workspace), nil
 }
 
 func (s *Service) UpdateById(ID string, payload UpdateWorkspaceInput) (WorkspaceList, error) {

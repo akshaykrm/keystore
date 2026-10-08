@@ -1,5 +1,8 @@
 ## In Progress
 
+- [ ] Users should be able to create their workspaces
+      For this need to create controller for workspaces I think we can have it seperate
+
 ---
 
 ## Current Status
@@ -7,11 +10,9 @@
 - [x] Parse token and extract the authenticated user details
 - [x] Create middleware to protect routes
 - [x] Authenticate user from token
+- [x] Users should be able to list their workspaces
 
 ## Next Steps
-
-- [ ] Users should be able to create their workspaces
-- [ ] Users should be able to list their workspaces
 
 ---
 
