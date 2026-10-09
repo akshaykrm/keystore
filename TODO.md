@@ -13,6 +13,11 @@
 
 ## Next Steps
 
+- [ ] Research on how to handle products
+- [ ] Decide on who owns product and product categories is it the system/users/workspaces
+- [ ] Plan the implementation details for users
+- [ ] Create Product category model
+
 ---
 
 ## Backlog
