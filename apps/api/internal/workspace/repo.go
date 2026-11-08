@@ -127,7 +127,7 @@ func (r *Repository) GetById(ID string) (Workspace, error) {
 	return workspace, nil
 }
 
-func (r *Repository) GetByIdAndUser(id, userID string) (*Workspace, error) {
+func (r *Repository) GetByIdAndUser(id, userID int64) (*Workspace, error) {
 	query := `SELECT 
 			w.id,
 			w.name,

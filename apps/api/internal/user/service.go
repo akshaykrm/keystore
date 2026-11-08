@@ -1,45 +1,47 @@
 package user
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
+	"github.com/akshaykrm/keystore/apps/api/db"
 	"github.com/akshaykrm/keystore/apps/api/internal/auth"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type Service struct {
-	repo       *Repository
+	query      db.Querier
 	workspace  workspaceCreator
 	membership membershiptCreator
 }
 
-func NewService(r *Repository, w workspaceCreator, m membershiptCreator) *Service {
+func NewService(q db.Querier, w workspaceCreator, m membershiptCreator) *Service {
 	return &Service{
-		repo:       r,
+		query:      q,
 		workspace:  w,
 		membership: m,
 	}
 }
 
-func (s *Service) Create(newUser CreateUserInput) error {
-	fmt.Println("Creating User %s", newUser.Name)
+func (s *Service) Create(ctx context.Context, newUser CreateUserInput) error {
 	now := time.Now().UTC()
 	hashedPassword, err := auth.HashPassword(newUser.Password)
 	if err != nil {
 		return err
 	}
 
-	user := User{
-		Email:     newUser.Email,
-		Password:  hashedPassword,
-		Name:      newUser.Name,
-		CreatedAt: now,
-		UpdatedAt: now,
+	user := db.CreateUserParams{
+		Email:        newUser.Email,
+		PasswordHash: hashedPassword,
+		Name:         newUser.Name,
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	}
 
-	createdUser, err := s.repo.Create(user)
-	fmt.Printf("User Created with ID: %s \n", createdUser.ID)
+	createdUser, err := s.query.CreateUser(ctx, user)
+
 	if err != nil {
 		fmt.Printf("User create failed %w", err)
 		return err
@@ -59,27 +61,23 @@ func (s *Service) Create(newUser CreateUserInput) error {
 	return nil
 }
 
-func (s *Service) GetAll() ([]UserResponse, error) {
-	users, err := s.repo.GetAll()
+func (s *Service) GetAll(ctx context.Context) ([]db.GetAllUsersRow, error) {
+	users, err := s.query.GetAllUsers(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	userResponse := make([]UserResponse, 0, len(users))
-	for _, user := range users {
-		userResponse = append(userResponse, toUserResponse(user))
-	}
-	return userResponse, nil
+	return users, nil
 }
 
-func (s *Service) Login(loginReq LoginRequest) (string, error) {
-	user, err := s.repo.GetPasswordByEmail(loginReq.Email)
+func (s *Service) Login(ctx context.Context, loginReq LoginRequest) (string, error) {
+	user, err := s.query.GetUserPasswordByEmail(ctx, loginReq.Email)
 	if err != nil {
 		return "", err
 	}
 
-	if err := auth.CompareHashedPassword(user.Password, loginReq.Password); err != nil {
+	if err := auth.CompareHashedPassword(user.PasswordHash, loginReq.Password); err != nil {
 		return "", fmt.Errorf("Password check failed: %w", err)
 	}
 
@@ -99,35 +97,38 @@ func (s *Service) Login(loginReq LoginRequest) (string, error) {
 	return token, nil
 }
 
-func (s *Service) GetByEmail(Email string) (UserResponse, error) {
-	user, err := s.repo.GetByEmail(Email)
+func (s *Service) GetByEmail(ctx context.Context, Email string) (db.GetUserByEmailRow, error) {
+	user, err := s.query.GetUserByEmail(ctx, Email)
 	if err != nil {
-		return UserResponse{}, err
+		return db.GetUserByEmailRow{}, err
 	}
-	return toUserResponse(user), nil
+	return user, nil
 }
 
-func (s *Service) GetByID(ID string) (UserResponse, error) {
-	user, err := s.repo.GetByID(ID)
+func (s *Service) GetByID(ctx context.Context, ID int64) (db.GetUserByIDRow, error) {
+	user, err := s.query.GetUserByID(ctx, ID)
 	if err != nil {
-		return UserResponse{}, err
+		return db.GetUserByIDRow{}, err
 	}
 
-	return toUserResponse(user), nil
+	return user, nil
 }
 
-func (s *Service) UpdateById(ID string, req UpdateUserInput) (UserResponse, error) {
-	user, err := s.repo.GetByID(ID)
+func (s *Service) UpdateById(ctx context.Context, ID int64, req UpdateUserInput) (UserResponse, error) {
+	user, err := s.query.GetUserByID(ctx, ID)
 	if err != nil {
 		return UserResponse{}, err
 	}
 
 	now := time.Now().UTC()
-	user.Name = req.Name
-	user.Email = req.Email
-	user.UpdatedAt = now
+	payload := db.UpdateUserByIDParams{
+		ID:        user.ID,
+		Email:     user.Email,
+		Name:      user.Name,
+		UpdatedAt: now,
+	}
 
-	if err := s.repo.UpdateByID(user); err != nil {
+	if err := s.query.UpdateUserByID(ctx, payload); err != nil {
 		return UserResponse{}, err
 	}
 
@@ -140,25 +141,15 @@ func (s *Service) UpdateById(ID string, req UpdateUserInput) (UserResponse, erro
 	}, nil
 }
 
-func (s *Service) DeleteById(ID string) error {
-	user, err := s.repo.GetByID(ID)
-
-	if err != nil {
-		return err
+func (s *Service) DeleteById(ctx context.Context, ID int64) error {
+	now := sql.NullTime{
+		Time:  time.Now().UTC(),
+		Valid: true,
+	}
+	payload := db.DeleteUserByIDParams{
+		DeletedAt: now,
+		ID:        ID,
 	}
 
-	now := time.Now().UTC()
-	user.DeletedAt = &now
-
-	return s.repo.DeleteById(user)
-}
-
-func toUserResponse(user User) UserResponse {
-	return UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}
+	return s.query.DeleteUserByID(ctx, payload)
 }

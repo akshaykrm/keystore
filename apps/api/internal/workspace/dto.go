@@ -5,7 +5,7 @@ import "time"
 type CreateWorkspacePayload struct {
 	Name   string
 	Slug   string
-	UserId string
+	UserId int64
 }
 
 type UpdateWorkspaceInput struct {
@@ -24,7 +24,7 @@ type updateWorkspaceRequestBody struct {
 }
 
 type WorkspaceList struct {
-	ID        string    `json:"id"`
+	ID        int64     `json:"id"`
 	Name      string    `json:"name"`
 	Slug      string    `json:"slug"`
 	CreatedAt time.Time `json:"created_at"`
@@ -32,5 +32,5 @@ type WorkspaceList struct {
 }
 
 type ListWorkspaceFilter struct {
-	UserID string
+	UserID int64
 }

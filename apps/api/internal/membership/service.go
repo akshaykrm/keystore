@@ -13,7 +13,7 @@ func NewService(r *Repository) *Service {
 	return &Service{repo: r}
 }
 
-func (s *Service) CreateDefaultMembership(workspaceID, userID string) error {
+func (s *Service) CreateDefaultMembership(workspaceID, userID int64) error {
 	payload := CreateMembershipInput{
 		WorkspaceID: workspaceID,
 		UserID:      userID,

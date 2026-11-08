@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/akshaykrm/keystore/apps/api/internal/auth"
@@ -52,7 +53,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := c.service.Login(loginReq)
+	token, err := c.service.Login(r.Context(), loginReq)
 	if err != nil {
 		res := httpx.ErrorResponse{
 			Message: "Authentication Failed",
@@ -110,7 +111,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		Name:     req.Name,
 	}
 
-	err = c.service.Create(user)
+	err = c.service.Create(r.Context(), user)
 
 	resp := httpx.SuccessResponse{
 		Message: "user created",
@@ -127,7 +128,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println(claims)
-	users, err := c.service.GetAll()
+	users, err := c.service.GetAll(r.Context())
 
 	if err != nil {
 		httpx.Error(w, err.Error(), http.StatusInternalServerError)
@@ -144,7 +145,16 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
-	userResp, err := c.service.GetByID(id)
+	num, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		httpx.Json(w, httpx.Response{
+			Message: "Product id invalid",
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	userResp, err := c.service.GetByID(r.Context(), num)
 
 	if err != nil {
 		if errors.Is(err, ErrUserNotFound) {
@@ -203,7 +213,16 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 		Name:  req.Name,
 	}
 
-	if _, err := c.service.UpdateById(id, user); err != nil {
+	num, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		httpx.Json(w, httpx.Response{
+			Message: "Product id invalid",
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	if _, err := c.service.UpdateById(r.Context(), num, user); err != nil {
 		if errors.Is(err, ErrUserNotFound) {
 			httpx.Error(w, "user not found", http.StatusNotFound)
 			return
@@ -226,7 +245,16 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
-	if err := c.service.DeleteById(id); err != nil {
+	num, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		httpx.Json(w, httpx.Response{
+			Message: "Product id invalid",
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	if err := c.service.DeleteById(r.Context(), num); err != nil {
 		if errors.Is(err, ErrUserNotFound) {
 			httpx.Error(w, "user not found", http.StatusNotFound)
 			return

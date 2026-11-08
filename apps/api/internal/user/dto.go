@@ -23,7 +23,7 @@ type UpdateUserRequest struct {
 }
 
 type UserResponse struct {
-	ID        string    `json:"id"`
+	ID        int64     `json:"id"`
 	Email     string    `json:"email"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
@@ -42,9 +42,9 @@ type UpdateUserInput struct {
 }
 
 type workspaceCreator interface {
-	CreateDefaultWorkspaceForUser(name string) (string, error)
+	CreateDefaultWorkspaceForUser(name string) (int64, error)
 }
 
 type membershiptCreator interface {
-	CreateDefaultMembership(workspacID, userID string) error
+	CreateDefaultMembership(workspacID, userID int64) error
 }

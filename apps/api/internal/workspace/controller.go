@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/akshaykrm/keystore/apps/api/internal/auth"
@@ -125,7 +126,15 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	workspace, err := c.service.GetById(id, claims.ID)
+	num, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		httpx.Json(w, httpx.Response{
+			Message: "Product id invalid",
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+	workspace, err := c.service.GetById(num, claims.ID)
 
 	if err != nil {
 		if errors.Is(err, ErrWorkspaceNotFound) {

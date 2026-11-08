@@ -54,8 +54,8 @@ func main() {
 	workspaceService := workspace.NewService(workspaceRepo, membershipService)
 	workspaceController := workspace.NewController(workspaceService)
 
-	userRepo := user.NewRepository(conn)
-	userService := user.NewService(userRepo, workspaceService, membershipService)
+	// userRepo := user.NewRepository(conn)
+	userService := user.NewService(queries, workspaceService, membershipService)
 	userController := user.NewController(userService)
 
 	// Register Roues

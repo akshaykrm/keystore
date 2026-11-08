@@ -12,8 +12,8 @@ import (
 type Membership struct {
 	ID          int64        `json:"id"`
 	Role        string       `json:"role"`
-	WorkspaceID string       `json:"workspace_id"`
-	UserID      string       `json:"user_id"`
+	WorkspaceID int64        `json:"workspace_id"`
+	UserID      int64        `json:"user_id"`
 	CreatedAt   time.Time    `json:"created_at"`
 	UpdatedAt   time.Time    `json:"updated_at"`
 	DeletedAt   sql.NullTime `json:"deleted_at"`

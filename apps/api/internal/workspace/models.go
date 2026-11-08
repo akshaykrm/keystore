@@ -3,7 +3,7 @@ package workspace
 import "time"
 
 type Workspace struct {
-	ID        string
+	ID        int64
 	Name      string
 	Slug      string
 	CreatedAt time.Time

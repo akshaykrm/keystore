@@ -1,23 +1,20 @@
 package membership
 
-type Role string
-
 const (
-	RoleOwner  Role = "owner"
-	RoleMember Role = "member"
+	RoleOwner  string = "owner"
+	RoleMember string = "member"
 )
 
-func (r Role) IsValid() bool {
-	switch r {
-	case RoleOwner, RoleMember:
-		return true
-	default:
-		return false
-	}
-}
-
+//	func IsValid() bool {
+//		switch r {
+//		case RoleOwner, RoleMember:
+//			return true
+//		default:
+//			return false
+//		}
+//	}
 type CreateMembershipInput struct {
-	WorkspaceID string
-	UserID      string
-	Role        Role
+	WorkspaceID int64
+	UserID      int64
+	Role        string
 }

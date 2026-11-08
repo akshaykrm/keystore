@@ -6,7 +6,7 @@ import (
 )
 
 type membershiptCreator interface {
-	CreateDefaultMembership(workspacID, userID string) error
+	CreateDefaultMembership(workspacID, userID int64) error
 }
 
 type Service struct {
@@ -21,7 +21,7 @@ func NewService(r *Repository, m membershiptCreator) *Service {
 	}
 }
 
-func (s *Service) CreateDefaultWorkspaceForUser(name string) (string, error) {
+func (s *Service) CreateDefaultWorkspaceForUser(name string) (int64, error) {
 	workspaceName := name + "s" + " " + "Workspace"
 	workspaceSlug := strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(workspaceName), "'", " "), " ", "-")
 
@@ -62,7 +62,7 @@ func (s *Service) GetAll(filter ListWorkspaceFilter) ([]WorkspaceList, error) {
 
 }
 
-func (s *Service) GetById(ID, userId string) (WorkspaceList, error) {
+func (s *Service) GetById(ID, userId int64) (WorkspaceList, error) {
 	workspace, err := s.repo.GetByIdAndUser(ID, userId)
 	if err != nil {
 		return WorkspaceList{}, err
