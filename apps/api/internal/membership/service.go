@@ -1,32 +1,35 @@
 package membership
 
 import (
+	"context"
 	"fmt"
 	"time"
+
+	"github.com/akshaykrm/keystore/apps/api/db"
 )
 
 type Service struct {
-	repo *Repository
+	query db.Querier
 }
 
-func NewService(r *Repository) *Service {
-	return &Service{repo: r}
+func NewService(q db.Querier) *Service {
+	return &Service{query: q}
 }
 
-func (s *Service) CreateDefaultMembership(workspaceID, userID int64) error {
+func (s *Service) CreateDefaultMembership(ctx context.Context, workspaceID, userID int64) error {
 	payload := CreateMembershipInput{
 		WorkspaceID: workspaceID,
 		UserID:      userID,
 		Role:        RoleOwner,
 	}
-	fmt.Println(payload, userID)
-	return s.Create(payload)
+
+	return s.Create(ctx, payload)
 }
 
-func (s *Service) Create(newMembership CreateMembershipInput) error {
+func (s *Service) Create(ctx context.Context, newMembership CreateMembershipInput) error {
 	now := time.Now().UTC()
 
-	membership := Membership{
+	membership := db.CreateMembershipParams{
 		WorkspaceID: newMembership.WorkspaceID,
 		UserID:      newMembership.UserID,
 		Role:        newMembership.Role,
@@ -34,7 +37,7 @@ func (s *Service) Create(newMembership CreateMembershipInput) error {
 		UpdatedAt:   now,
 	}
 
-	if err := s.repo.Create(membership); err != nil {
+	if err := s.query.CreateMembership(ctx, membership); err != nil {
 		fmt.Printf("Membership Create Failed %v", err)
 		return err
 	}

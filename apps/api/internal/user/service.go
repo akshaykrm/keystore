@@ -47,7 +47,7 @@ func (s *Service) Create(ctx context.Context, newUser CreateUserInput) error {
 		return err
 	}
 
-	workspaceID, err := s.workspace.CreateDefaultWorkspaceForUser(createdUser.Name)
+	workspaceID, err := s.workspace.CreateDefaultWorkspaceForUser(ctx, createdUser.Name)
 	if err != nil {
 		fmt.Printf("Workspace create failed %w", err)
 		return err
@@ -55,7 +55,7 @@ func (s *Service) Create(ctx context.Context, newUser CreateUserInput) error {
 
 	fmt.Printf("Workspace Created with ID: %s \n", workspaceID)
 
-	if err := s.membership.CreateDefaultMembership(workspaceID, createdUser.ID); err != nil {
+	if err := s.membership.CreateDefaultMembership(ctx, workspaceID, createdUser.ID); err != nil {
 		return err
 	}
 	return nil

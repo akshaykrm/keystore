@@ -9,17 +9,24 @@ import (
 )
 
 type Querier interface {
+	CreateMembership(ctx context.Context, arg CreateMembershipParams) error
 	CreateProducts(ctx context.Context, arg CreateProductsParams) (Product, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	CreateWorkspace(ctx context.Context, arg CreateWorkspaceParams) (CreateWorkspaceRow, error)
 	DeleteUserByID(ctx context.Context, arg DeleteUserByIDParams) error
+	DeleteWorkspaceByID(ctx context.Context, arg DeleteWorkspaceByIDParams) error
 	GetAllProducts(ctx context.Context) ([]GetAllProductsRow, error)
 	GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error)
+	GetAllWorkspaces(ctx context.Context, userID int64) ([]GetAllWorkspacesRow, error)
 	GetOneProductByID(ctx context.Context, id int64) (GetOneProductByIDRow, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error)
 	GetUserPasswordByEmail(ctx context.Context, email string) (GetUserPasswordByEmailRow, error)
+	GetWorkspaceByID(ctx context.Context, id int64) (GetWorkspaceByIDRow, error)
+	GetWorkspaceByUserAndID(ctx context.Context, arg GetWorkspaceByUserAndIDParams) (GetWorkspaceByUserAndIDRow, error)
 	UpdateProductById(ctx context.Context, arg UpdateProductByIdParams) error
 	UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error
+	UpdateWorkspaceByID(ctx context.Context, arg UpdateWorkspaceByIDParams) error
 }
 
 var _ Querier = (*Queries)(nil)

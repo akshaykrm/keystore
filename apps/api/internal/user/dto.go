@@ -1,6 +1,9 @@
 package user
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type CreateUserRequest struct {
 	Email    string `json:"email" validate:"required,email"`
@@ -42,9 +45,9 @@ type UpdateUserInput struct {
 }
 
 type workspaceCreator interface {
-	CreateDefaultWorkspaceForUser(name string) (int64, error)
+	CreateDefaultWorkspaceForUser(ctx context.Context, name string) (int64, error)
 }
 
 type membershiptCreator interface {
-	CreateDefaultMembership(workspacID, userID int64) error
+	CreateDefaultMembership(ctx context.Context, workspacID, userID int64) error
 }

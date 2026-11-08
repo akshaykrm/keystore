@@ -75,7 +75,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		UserId: claims.ID,
 	}
 
-	if _, err := c.service.Create(workspace); err != nil {
+	if _, err := c.service.Create(r.Context(), workspace); err != nil {
 		httpx.Json(w, httpx.Response{
 			Message: "something went wrong while creating workspace",
 			Status:  http.StatusInternalServerError,
@@ -100,7 +100,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	filter := ListWorkspaceFilter{
 		UserID: claims.ID,
 	}
-	workspaces, err := c.service.GetAll(filter)
+	workspaces, err := c.service.GetAll(r.Context(), filter)
 	if err != nil {
 		httpx.Json(w, httpx.Response{
 			Message: "something went wrong while retrieving workspaces",
@@ -120,7 +120,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue(("id"))
-	claims, ok := auth.GetClaims(r)
+	_, ok := auth.GetClaims(r)
 	if !ok {
 		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
 		return
@@ -134,7 +134,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	workspace, err := c.service.GetById(num, claims.ID)
+	workspace, err := c.service.GetById(r.Context(), num)
 
 	if err != nil {
 		if errors.Is(err, ErrWorkspaceNotFound) {
@@ -184,7 +184,16 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 		Name: body.Name,
 		Slug: body.Slug,
 	}
-	if _, err := c.service.UpdateById(id, payload); err != nil {
+	num, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		httpx.Json(w, httpx.Response{
+			Message: "Product id invalid",
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	if err := c.service.UpdateById(r.Context(), num, payload); err != nil {
 		if err == ErrWorkspaceNotFound {
 			httpx.Json(w, httpx.Response{
 				Message: "workspace not found",
@@ -211,7 +220,16 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
-	if err := c.service.DeleteById(id); err != nil {
+	num, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		httpx.Json(w, httpx.Response{
+			Message: "Product id invalid",
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	if err := c.service.DeleteById(r.Context(), num); err != nil {
 		if errors.Is(err, ErrWorkspaceNotFound) {
 			httpx.Json(w, httpx.Response{
 				Message: "workspace not found",
