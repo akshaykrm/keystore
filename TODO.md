@@ -1,5 +1,7 @@
 ## In Progress
 
+- [ ] Create product CRUD
+
 ---
 
 ## Current Status
@@ -10,11 +12,11 @@
 - [x] Users should be able to list their workspaces
 - [x] Users should be able to create their workspaces
 - [x] Users should be able to view a single workspace
+- [x] Research on how to handle products
+- [x] Decide on who owns product and product categories is it the system/users/workspaces
 
 ## Next Steps
 
-- [ ] Research on how to handle products
-- [ ] Decide on who owns product and product categories is it the system/users/workspaces
 - [ ] Plan the implementation details for users
 - [ ] Create Product category model
 
