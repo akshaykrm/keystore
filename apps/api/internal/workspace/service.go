@@ -3,6 +3,7 @@ package workspace
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"strings"
 	"time"
 
@@ -60,7 +61,14 @@ func (s *Service) GetAll(ctx context.Context, filter ListWorkspaceFilter) ([]db.
 }
 
 func (s *Service) GetById(ctx context.Context, ID int64) (db.GetWorkspaceByIDRow, error) {
-	return s.query.GetWorkspaceByID(ctx, ID)
+	workspace, err := s.query.GetWorkspaceByID(ctx, ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return workspace, ErrWorkspaceNotFound
+		}
+	}
+	return workspace, err
+
 }
 
 func (s *Service) UpdateById(ctx context.Context, ID int64, payload UpdateWorkspaceInput) error {
