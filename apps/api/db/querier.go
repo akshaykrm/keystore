@@ -6,6 +6,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
@@ -14,7 +15,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateWorkspace(ctx context.Context, arg CreateWorkspaceParams) (CreateWorkspaceRow, error)
 	DeleteUserByID(ctx context.Context, arg DeleteUserByIDParams) error
-	DeleteWorkspaceByID(ctx context.Context, arg DeleteWorkspaceByIDParams) error
+	DeleteWorkspaceByID(ctx context.Context, arg DeleteWorkspaceByIDParams) (sql.Result, error)
 	GetAllProducts(ctx context.Context) ([]GetAllProductsRow, error)
 	GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error)
 	GetAllWorkspaces(ctx context.Context, userID int64) ([]GetAllWorkspacesRow, error)
@@ -26,7 +27,7 @@ type Querier interface {
 	GetWorkspaceByUserAndID(ctx context.Context, arg GetWorkspaceByUserAndIDParams) (GetWorkspaceByUserAndIDRow, error)
 	UpdateProductById(ctx context.Context, arg UpdateProductByIdParams) error
 	UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error
-	UpdateWorkspaceByID(ctx context.Context, arg UpdateWorkspaceByIDParams) error
+	UpdateWorkspaceByID(ctx context.Context, arg UpdateWorkspaceByIDParams) (sql.Result, error)
 }
 
 var _ Querier = (*Queries)(nil)

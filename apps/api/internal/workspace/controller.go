@@ -147,7 +147,6 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 				Message: "something went wrong while retrieving workspace",
 				Status:  http.StatusInternalServerError,
 			})
-			fmt.Printf("Failed to get workspace by id '%s': %v", id, err)
 		}
 		return
 	}

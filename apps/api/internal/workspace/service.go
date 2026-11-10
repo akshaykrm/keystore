@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -62,25 +63,40 @@ func (s *Service) GetAll(ctx context.Context, filter ListWorkspaceFilter) ([]db.
 
 func (s *Service) GetById(ctx context.Context, ID int64) (db.GetWorkspaceByIDRow, error) {
 	workspace, err := s.query.GetWorkspaceByID(ctx, ID)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return workspace, ErrWorkspaceNotFound
 		}
 	}
-	return workspace, err
+	return workspace, nil
 
 }
 
 func (s *Service) UpdateById(ctx context.Context, ID int64, payload UpdateWorkspaceInput) error {
 	now := time.Now().UTC()
 
-	return s.query.UpdateWorkspaceByID(ctx,
+	result, err := s.query.UpdateWorkspaceByID(ctx,
 		db.UpdateWorkspaceByIDParams{
 			ID:        ID,
 			Name:      payload.Name,
 			Slug:      payload.Slug,
 			UpdatedAt: now,
 		})
+
+	if err != nil {
+		return fmt.Errorf("updating workspace %d: %w", ID, err)
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("getting rows affected for workspace %d: %w", ID, err)
+	} else if count == 0 {
+		return ErrWorkspaceNotFound
+	}
+
+	return nil
+
 }
 
 func (s *Service) DeleteById(ctx context.Context, ID int64) error {
@@ -94,5 +110,19 @@ func (s *Service) DeleteById(ctx context.Context, ID int64) error {
 		DeletedAt: now,
 	}
 
-	return s.query.DeleteWorkspaceByID(ctx, payload)
+	result, err := s.query.DeleteWorkspaceByID(ctx, payload)
+
+	if err != nil {
+		return fmt.Errorf("deleting workspace %d: %w", ID, err)
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("getting rows affected for workspace %d: %w", ID, err)
+	} else if count == 0 {
+		return ErrWorkspaceNotFound
+	}
+
+	return nil
+
 }

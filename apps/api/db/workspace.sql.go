@@ -62,13 +62,14 @@ func (q *Queries) CreateWorkspace(ctx context.Context, arg CreateWorkspaceParams
 	return i, err
 }
 
-const deleteWorkspaceByID = `-- name: DeleteWorkspaceByID :exec
+const deleteWorkspaceByID = `-- name: DeleteWorkspaceByID :execresult
 UPDATE
     workspaces
 SET
     deleted_at = ?
 WHERE
     id = ?
+    AND deleted_at IS NULL
 `
 
 type DeleteWorkspaceByIDParams struct {
@@ -76,9 +77,8 @@ type DeleteWorkspaceByIDParams struct {
 	ID        int64        `json:"id"`
 }
 
-func (q *Queries) DeleteWorkspaceByID(ctx context.Context, arg DeleteWorkspaceByIDParams) error {
-	_, err := q.db.ExecContext(ctx, deleteWorkspaceByID, arg.DeletedAt, arg.ID)
-	return err
+func (q *Queries) DeleteWorkspaceByID(ctx context.Context, arg DeleteWorkspaceByIDParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, deleteWorkspaceByID, arg.DeletedAt, arg.ID)
 }
 
 const getAllWorkspaces = `-- name: GetAllWorkspaces :many
@@ -210,7 +210,7 @@ func (q *Queries) GetWorkspaceByUserAndID(ctx context.Context, arg GetWorkspaceB
 	return i, err
 }
 
-const updateWorkspaceByID = `-- name: UpdateWorkspaceByID :exec
+const updateWorkspaceByID = `-- name: UpdateWorkspaceByID :execresult
 UPDATE
     workspaces
 SET
@@ -219,6 +219,7 @@ SET
     updated_at = ?
 WHERE
     id = ?
+    AND deleted_at IS NULL
 `
 
 type UpdateWorkspaceByIDParams struct {
@@ -228,12 +229,11 @@ type UpdateWorkspaceByIDParams struct {
 	ID        int64     `json:"id"`
 }
 
-func (q *Queries) UpdateWorkspaceByID(ctx context.Context, arg UpdateWorkspaceByIDParams) error {
-	_, err := q.db.ExecContext(ctx, updateWorkspaceByID,
+func (q *Queries) UpdateWorkspaceByID(ctx context.Context, arg UpdateWorkspaceByIDParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, updateWorkspaceByID,
 		arg.Name,
 		arg.Slug,
 		arg.UpdatedAt,
 		arg.ID,
 	)
-	return err
 }

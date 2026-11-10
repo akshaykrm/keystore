@@ -57,7 +57,7 @@ WHERE
     AND m.user_id = ?
     AND w.deleted_at IS NULL;
 
--- name: UpdateWorkspaceByID :exec
+-- name: UpdateWorkspaceByID :execresult
 UPDATE
     workspaces
 SET
@@ -65,12 +65,14 @@ SET
     slug = ?,
     updated_at = ?
 WHERE
-    id = ?;
+    id = ?
+    AND deleted_at IS NULL;
 
--- name: DeleteWorkspaceByID :exec
+-- name: DeleteWorkspaceByID :execresult
 UPDATE
     workspaces
 SET
     deleted_at = ?
 WHERE
-    id = ?;
+    id = ?
+    AND deleted_at IS NULL;
