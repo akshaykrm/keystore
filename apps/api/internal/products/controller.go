@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/akshaykrm/keystore/apps/api/internal/apperr"
 	"github.com/akshaykrm/keystore/apps/api/internal/auth"
 	"github.com/akshaykrm/keystore/apps/api/internal/httpx"
 	"github.com/go-playground/validator/v10"
@@ -87,16 +88,13 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, ErrProductUniqueViolation) {
 			httpx.Json(w, httpx.Response{
-				Message: "create product failed",
+				Message: "A product with SKU already exists.",
 				Error:   err.Error(),
 				Status:  http.StatusConflict,
 			})
 			return
 		}
-		httpx.Json(w, httpx.Response{
-			Message: "something went wrong while creating product",
-			Status:  http.StatusInternalServerError,
-		})
+		httpx.InternalServerError(w, r, err)
 		return
 	}
 
@@ -111,11 +109,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	products, err := c.service.GetAll(r.Context())
 
 	if err != nil {
-		httpx.Json(w, httpx.Response{
-			Message: "something went wrong while retrieving products",
-			Status:  http.StatusInternalServerError,
-		})
-		fmt.Printf("Failed to get product list: %v", err)
+		httpx.InternalServerError(w, r, err)
 		return
 	}
 
@@ -146,14 +140,19 @@ func (c *Controller) GetOneByID(w http.ResponseWriter, r *http.Request) {
 	product, err := c.service.GetOneByID(r.Context(), num)
 
 	if err != nil {
-		httpx.Json(w, httpx.Response{
-			Message: "Product not found",
-			Status:  http.StatusNotFound,
-		})
+		if errors.Is(err, apperr.ErrNotFound) {
+			httpx.Json(w, httpx.Response{
+				Message: "the requested product does not exists",
+				Error:   err.Error(),
+				Status:  http.StatusNotFound,
+			})
+			return
+		}
+		httpx.InternalServerError(w, r, err)
 		return
 	}
 	httpx.Json(w, httpx.Response{
-		Message: "Product found",
+		Message: "product found",
 		Data:    product,
 		Status:  http.StatusOK,
 	})

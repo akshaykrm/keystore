@@ -2,10 +2,13 @@ package products
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/akshaykrm/keystore/apps/api/db"
+	"github.com/akshaykrm/keystore/apps/api/internal/apperr"
 )
 
 type Service struct {
@@ -13,7 +16,6 @@ type Service struct {
 }
 
 func NewService(q *db.Queries) *Service {
-	fmt.Println("Creating new Service:", q)
 	return &Service{
 		queries: q,
 	}
@@ -32,7 +34,7 @@ func (s *Service) Create(ctx context.Context, payload CreateProduct) (db.Product
 
 	if err != nil {
 		if db.IsUniqueViolation(err) {
-			return p, ErrProductUniqueViolation
+			return p, apperr.ErrUniqueViolation
 		}
 		return p, fmt.Errorf("product create failed: %w", err)
 	}
@@ -42,11 +44,9 @@ func (s *Service) Create(ctx context.Context, payload CreateProduct) (db.Product
 }
 
 func (s *Service) GetAll(ctx context.Context) ([]db.GetAllProductsRow, error) {
-
 	products, err := s.queries.GetAllProducts(ctx)
-
 	if err != nil {
-		return products, fmt.Errorf("Product get all failed: %w", err)
+		return products, fmt.Errorf("product get all failed: %w", apperr.ErrNotFound)
 	}
 	return products, nil
 }
@@ -54,8 +54,12 @@ func (s *Service) GetAll(ctx context.Context) ([]db.GetAllProductsRow, error) {
 func (s *Service) GetOneByID(ctx context.Context, id int64) (db.GetOneProductByIDRow, error) {
 	product, err := s.queries.GetOneProductByID(ctx, id)
 
+	fmt.Println(errors.Is(err, sql.ErrNoRows))
 	if err != nil {
-		return product, fmt.Errorf("Product get by id failed: %w", err)
+		if db.IsNotFound(err) {
+			return product, apperr.ErrNotFound
+		}
+		return product, fmt.Errorf("product get by id %d failed in db: %w", id, err)
 	}
 	return product, nil
 }

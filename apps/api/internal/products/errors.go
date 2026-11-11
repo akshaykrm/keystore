@@ -2,5 +2,5 @@ package products
 
 import "errors"
 
-var ErrProductNotFound = errors.New("products not found")
-var ErrProductUniqueViolation = errors.New("unique constraint violation")
+var ErrProductNotFound = errors.New("PRODUCT_NOT_FOUND")
+var ErrProductUniqueViolation = errors.New("UNIQUE_CONSTRAINT_VIOLATION")

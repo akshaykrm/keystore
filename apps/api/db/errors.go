@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"errors"
 
 	"modernc.org/sqlite"
@@ -14,4 +15,8 @@ func IsUniqueViolation(err error) bool {
 	}
 
 	return false
+}
+
+func IsNotFound(err error) bool {
+	return errors.Is(err, sql.ErrNoRows)
 }
