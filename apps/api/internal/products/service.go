@@ -31,10 +31,13 @@ func (s *Service) Create(ctx context.Context, payload CreateProduct) (db.Product
 	})
 
 	if err != nil {
-		return p, fmt.Errorf("Product create failed: %w", err)
+		if db.IsUniqueViolation(err) {
+			return p, ErrProductUniqueViolation
+		}
+		return p, fmt.Errorf("product create failed: %w", err)
 	}
 
-	return db.Product{}, nil
+	return p, nil
 
 }
 

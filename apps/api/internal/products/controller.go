@@ -83,7 +83,16 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		WorkspaceID: req.WorkspaceID,
 	}
 
-	if _, err := c.service.Create(r.Context(), product); err != nil {
+	p, err := c.service.Create(r.Context(), product)
+	if err != nil {
+		if errors.Is(err, ErrProductUniqueViolation) {
+			httpx.Json(w, httpx.Response{
+				Message: "create product failed",
+				Error:   err.Error(),
+				Status:  http.StatusConflict,
+			})
+			return
+		}
 		httpx.Json(w, httpx.Response{
 			Message: "something went wrong while creating product",
 			Status:  http.StatusInternalServerError,
@@ -94,6 +103,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	httpx.Json(w, httpx.Response{
 		Message: "product created",
 		Status:  http.StatusCreated,
+		Data:    p,
 	})
 }
 
