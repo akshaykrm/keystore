@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/akshaykrm/keystore/apps/api/internal/apperr"
 	"github.com/akshaykrm/keystore/apps/api/internal/auth"
 	"github.com/akshaykrm/keystore/apps/api/internal/httpx"
 	"github.com/go-playground/validator/v10"
@@ -55,11 +56,24 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 
 	token, err := c.service.Login(r.Context(), loginReq)
 	if err != nil {
-		res := httpx.ErrorResponse{
-			Message: "Authentication Failed",
-			Error:   err.Error(),
+		if errors.Is(err, apperr.ErrNotFound) {
+			httpx.Json(w, httpx.Response{
+				Message: "the requested user does not exist",
+				Error:   err.Error(),
+				Status:  http.StatusNotFound,
+			})
+			return
 		}
-		httpx.Error2(w, res, http.StatusNotFound)
+		if errors.Is(err, apperr.ErrAccessDenied) {
+			httpx.Json(w, httpx.Response{
+				Message: "resource restricted",
+				Error:   err.Error(),
+				Status:  http.StatusUnauthorized,
+			})
+			return
+		}
+
+		httpx.InternalServerError(w, r, err)
 		return
 
 	}
@@ -131,7 +145,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	users, err := c.service.GetAll(r.Context())
 
 	if err != nil {
-		httpx.Error(w, err.Error(), http.StatusInternalServerError)
+		httpx.InternalServerError(w, r, err)
 		return
 	}
 
@@ -157,11 +171,12 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 	userResp, err := c.service.GetByID(r.Context(), num)
 
 	if err != nil {
-		if errors.Is(err, ErrUserNotFound) {
+		if errors.Is(err, apperr.ErrNotFound) {
 			httpx.Error(w, "User not found", http.StatusNotFound)
 			return
 		}
-		httpx.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		httpx.InternalServerError(w, r, err)
+
 		return
 	}
 
@@ -223,15 +238,16 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := c.service.UpdateById(r.Context(), num, user); err != nil {
-		if errors.Is(err, ErrUserNotFound) {
+		if errors.Is(err, apperr.ErrNotFound) {
 			httpx.Error(w, "user not found", http.StatusNotFound)
 			return
 		}
-		if errors.Is(err, ErrEmailConflict) {
+		if errors.Is(err, apperr.ErrUniqueViolation) {
 			httpx.Error(w, "email already taken", http.StatusConflict)
 			return
 		}
-		httpx.Error(w, "failed to update user", http.StatusInternalServerError)
+		httpx.InternalServerError(w, r, err)
+
 		return
 	}
 
@@ -255,11 +271,11 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.service.DeleteById(r.Context(), num); err != nil {
-		if errors.Is(err, ErrUserNotFound) {
+		if errors.Is(err, apperr.ErrNotFound) {
 			httpx.Error(w, "user not found", http.StatusNotFound)
 			return
 		}
-		httpx.Error(w, "failed to delete user", http.StatusInternalServerError)
+		httpx.InternalServerError(w, r, err)
 		return
 	}
 

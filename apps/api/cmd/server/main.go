@@ -44,14 +44,14 @@ func main() {
 
 	queries := db.New(conn)
 
+	// Services
 	membershipService := membership.NewService(queries)
 	workspaceService := workspace.NewService(queries, membershipService)
 	productService := products.NewService(queries)
 	userService := user.NewService(queries, workspaceService, membershipService)
+
 	productController := products.NewController(productService)
-
 	workspaceController := workspace.NewController(workspaceService)
-
 	userController := user.NewController(userService)
 
 	// Register Roues

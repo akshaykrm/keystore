@@ -86,7 +86,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 
 	p, err := c.service.Create(r.Context(), product)
 	if err != nil {
-		if errors.Is(err, ErrProductUniqueViolation) {
+		if errors.Is(err, apperr.ErrUniqueViolation) {
 			httpx.Json(w, httpx.Response{
 				Message: "A product with SKU already exists.",
 				Error:   err.Error(),
@@ -142,7 +142,7 @@ func (c *Controller) GetOneByID(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, apperr.ErrNotFound) {
 			httpx.Json(w, httpx.Response{
-				Message: "the requested product does not exists",
+				Message: "the requested product does not exist",
 				Error:   err.Error(),
 				Status:  http.StatusNotFound,
 			})

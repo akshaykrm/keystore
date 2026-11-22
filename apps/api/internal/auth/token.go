@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -14,8 +15,17 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func CreateNewToken(claims Claims) (string, error) {
+// TODO: the key needs to come from someplace and not be part of code
+func CreateNewToken(ID int64, Email string) (string, error) {
 	key := []byte("super secret key")
+	issuedAt := time.Now()
+	expiresAt := issuedAt.Add(24 * time.Hour)
+	claims := Claims{
+		User:      Email,
+		ID:        ID,
+		IssuedAt:  jwt.NewNumericDate(issuedAt),
+		ExpiresAt: jwt.NewNumericDate(expiresAt),
+	}
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 

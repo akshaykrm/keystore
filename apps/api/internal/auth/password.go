@@ -17,14 +17,10 @@ func HashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func CompareHashedPassword(hashedPassword, password string) error {
+func CompareHashedPassword(hashedPassword, password string) bool {
 	bytePassword := []byte(password)
 	byteHash := []byte(hashedPassword)
 
 	err := bcrypt.CompareHashAndPassword(byteHash, bytePassword)
-
-	if err != nil {
-		return fmt.Errorf("password don't match: %w", err)
-	}
-	return nil
+	return err != nil
 }

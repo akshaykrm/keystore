@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/akshaykrm/keystore/apps/api/db"
+	"github.com/akshaykrm/keystore/apps/api/internal/apperr"
 	"github.com/akshaykrm/keystore/apps/api/internal/auth"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type Service struct {
@@ -43,20 +43,19 @@ func (s *Service) Create(ctx context.Context, newUser CreateUserInput) error {
 	createdUser, err := s.query.CreateUser(ctx, user)
 
 	if err != nil {
-		fmt.Printf("User create failed %w", err)
-		return err
+		if db.IsUniqueViolation(err) {
+			return apperr.ErrUniqueViolation
+		}
+		return fmt.Errorf("user create failed: %w", err)
 	}
 
 	workspaceID, err := s.workspace.CreateDefaultWorkspaceForUser(ctx, createdUser.Name)
 	if err != nil {
-		fmt.Printf("Workspace create failed %w", err)
-		return err
+		return fmt.Errorf("workspace create failed: %w", err)
 	}
 
-	fmt.Printf("Workspace Created with ID: %s \n", workspaceID)
-
 	if err := s.membership.CreateDefaultMembership(ctx, workspaceID, createdUser.ID); err != nil {
-		return err
+		return fmt.Errorf("membership create failed: %w", err)
 	}
 	return nil
 }
@@ -65,7 +64,7 @@ func (s *Service) GetAll(ctx context.Context) ([]db.GetAllUsersRow, error) {
 	users, err := s.query.GetAllUsers(ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("user get all failed: %w", apperr.ErrNotFound)
 	}
 
 	return users, nil
@@ -74,25 +73,19 @@ func (s *Service) GetAll(ctx context.Context) ([]db.GetAllUsersRow, error) {
 func (s *Service) Login(ctx context.Context, loginReq LoginRequest) (string, error) {
 	user, err := s.query.GetUserPasswordByEmail(ctx, loginReq.Email)
 	if err != nil {
-		return "", err
+		if db.IsNotFound(err) {
+			return "", apperr.ErrNotFound
+		}
+		return "", fmt.Errorf("user get by email %s failed in db: %w", loginReq.Email, err)
 	}
 
-	if err := auth.CompareHashedPassword(user.PasswordHash, loginReq.Password); err != nil {
-		return "", fmt.Errorf("Password check failed: %w", err)
+	if auth.CompareHashedPassword(user.PasswordHash, loginReq.Password) {
+		return "", apperr.ErrAccessDenied
 	}
 
-	issuedAt := time.Now()
-	expiresAt := issuedAt.Add(24 * time.Hour)
-	claims := auth.Claims{
-		User:      user.Email,
-		ID:        user.ID,
-		IssuedAt:  jwt.NewNumericDate(issuedAt),
-		ExpiresAt: jwt.NewNumericDate(expiresAt),
-	}
-	token, err := auth.CreateNewToken(claims)
+	token, err := auth.CreateNewToken(user.ID, user.Email)
 	if err != nil {
-
-		return "", fmt.Errorf("Token generation failed: %w", err)
+		return "", fmt.Errorf("token creation failed: %w", err)
 	}
 	return token, nil
 }
@@ -117,7 +110,11 @@ func (s *Service) GetByID(ctx context.Context, ID int64) (db.GetUserByIDRow, err
 func (s *Service) UpdateById(ctx context.Context, ID int64, req UpdateUserInput) (UserResponse, error) {
 	user, err := s.query.GetUserByID(ctx, ID)
 	if err != nil {
-		return UserResponse{}, err
+		if db.IsNotFound(err) {
+			return UserResponse{}, apperr.ErrNotFound
+		}
+
+		return UserResponse{}, fmt.Errorf("user get by id %d failed in db: %w", ID, err)
 	}
 
 	now := time.Now().UTC()

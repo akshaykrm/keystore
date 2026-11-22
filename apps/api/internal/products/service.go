@@ -2,8 +2,6 @@ package products
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 
@@ -54,7 +52,6 @@ func (s *Service) GetAll(ctx context.Context) ([]db.GetAllProductsRow, error) {
 func (s *Service) GetOneByID(ctx context.Context, id int64) (db.GetOneProductByIDRow, error) {
 	product, err := s.queries.GetOneProductByID(ctx, id)
 
-	fmt.Println(errors.Is(err, sql.ErrNoRows))
 	if err != nil {
 		if db.IsNotFound(err) {
 			return product, apperr.ErrNotFound
@@ -76,6 +73,10 @@ func (s *Service) UpdateByID(ctx context.Context, payload updateProduct) error {
 	})
 
 	if err != nil {
+		if db.IsUniqueViolation(err) {
+			return apperr.ErrUniqueViolation
+		}
+
 		return fmt.Errorf("Product update by id failed: %w", err)
 	}
 
