@@ -64,7 +64,7 @@ func (s *Service) GetAll(ctx context.Context) ([]db.GetAllUsersRow, error) {
 	users, err := s.query.GetAllUsers(ctx)
 
 	if err != nil {
-		return nil, fmt.Errorf("user get all failed: %w", apperr.ErrNotFound)
+		return nil, fmt.Errorf("user get all failed: %w", err)
 	}
 
 	return users, nil
@@ -101,7 +101,11 @@ func (s *Service) GetByEmail(ctx context.Context, Email string) (db.GetUserByEma
 func (s *Service) GetByID(ctx context.Context, ID int64) (db.GetUserByIDRow, error) {
 	user, err := s.query.GetUserByID(ctx, ID)
 	if err != nil {
-		return db.GetUserByIDRow{}, err
+		if db.IsNotFound(err) {
+			return db.GetUserByIDRow{}, apperr.ErrNotFound
+
+		}
+		return db.GetUserByIDRow{}, fmt.Errorf("user get by id %d failed in db: %w", ID, err)
 	}
 
 	return user, nil

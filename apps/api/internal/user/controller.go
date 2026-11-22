@@ -135,13 +135,12 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
-	claims, ok := auth.GetClaims(r)
+	_, ok := auth.GetClaims(r)
 	if !ok {
 		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
 		return
 	}
 
-	fmt.Println(claims)
 	users, err := c.service.GetAll(r.Context())
 
 	if err != nil {
@@ -162,7 +161,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 	num, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		httpx.Json(w, httpx.Response{
-			Message: "Product id invalid",
+			Message: "user id invalid",
 			Status:  http.StatusBadRequest,
 		})
 		return
@@ -172,11 +171,14 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, apperr.ErrNotFound) {
-			httpx.Error(w, "User not found", http.StatusNotFound)
+			httpx.Json(w, httpx.Response{
+				Message: "requested user not found",
+				Error:   err.Error(),
+				Status:  http.StatusNotFound,
+			})
 			return
 		}
 		httpx.InternalServerError(w, r, err)
-
 		return
 	}
 
