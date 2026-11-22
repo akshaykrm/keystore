@@ -78,11 +78,11 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	res := httpx.SuccessResponse{
-		Message: "Login route",
+	httpx.Json(w, httpx.Response{
+		Message: "authentication successful",
 		Data:    LoginResponse{token},
-	}
-	httpx.Write(w, res, http.StatusOK)
+		Status:  http.StatusOK,
+	})
 }
 
 func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
@@ -127,11 +127,22 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = c.service.Create(r.Context(), user)
 
-	resp := httpx.SuccessResponse{
-		Message: "user created",
+	if err != nil {
+		if errors.Is(err, apperr.ErrUniqueViolation) {
+			httpx.Json(w, httpx.Response{
+				Message: "please chose another email",
+				Error:   err.Error(),
+				Status:  http.StatusConflict,
+			})
+			return
+		}
+
 	}
 
-	httpx.Write(w, resp, http.StatusCreated)
+	httpx.Json(w, httpx.Response{
+		Message: "user created",
+		Status:  http.StatusCreated,
+	})
 }
 
 func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -148,11 +159,11 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := httpx.SuccessResponse{
+	httpx.Json(w, httpx.Response{
+		Message: "active users list",
 		Data:    users,
-		Message: "user list",
-	}
-	httpx.Write(w, resp, http.StatusOK)
+		Status:  http.StatusOK,
+	})
 }
 
 func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -182,12 +193,11 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := httpx.SuccessResponse{
+	httpx.Json(w, httpx.Response{
+		Message: "user retrieved by id",
 		Data:    userResp,
-		Message: "user",
-	}
-
-	httpx.Write(w, resp, http.StatusOK)
+		Status:  http.StatusOK,
+	})
 }
 
 func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
@@ -249,15 +259,13 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		httpx.InternalServerError(w, r, err)
-
 		return
 	}
 
-	resp := httpx.SuccessResponse{
+	httpx.Json(w, httpx.Response{
 		Message: "user updated",
-	}
-
-	httpx.Write(w, resp, http.StatusOK)
+		Status:  http.StatusOK,
+	})
 }
 
 func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
@@ -281,9 +289,8 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := httpx.SuccessResponse{
+	httpx.Json(w, httpx.Response{
 		Message: "user deleted",
-	}
-
-	httpx.Write(w, resp, http.StatusOK)
+		Status:  http.StatusOK,
+	})
 }
