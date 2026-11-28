@@ -64,7 +64,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, apperr.ErrNotFound) {
 			httpx.Json(w, httpx.Response{
 				Message: "the requested user does not exist",
-				Error:   err.Error(),
+				Error:   err,
 				Status:  http.StatusNotFound,
 			})
 			return
@@ -72,7 +72,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, apperr.ErrAccessDenied) {
 			httpx.Json(w, httpx.Response{
 				Message: "resource restricted",
-				Error:   err.Error(),
+				Error:   err,
 				Status:  http.StatusUnauthorized,
 			})
 			return
@@ -123,7 +123,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 			httpx.Json(w, httpx.Response{
 				Message: "invalid request",
 				Data:    errs,
-				Error:   apperr.ErrInvalidRequest.Error(),
+				Error:   apperr.ErrInvalidRequest,
 				Status:  http.StatusBadRequest,
 			})
 			return
@@ -142,7 +142,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, apperr.ErrUniqueViolation) {
 			httpx.Json(w, httpx.Response{
 				Message: "please chose another email",
-				Error:   err.Error(),
+				Error:   err,
 				Status:  http.StatusConflict,
 			})
 			return
@@ -162,7 +162,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 		httpx.Json(w,
 			httpx.Response{
 				Message: "user denied access",
-				Error:   apperr.ErrAccessDenied.Error(),
+				Error:   apperr.ErrAccessDenied,
 				Status:  http.StatusUnauthorized,
 			},
 		)
@@ -189,7 +189,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 		httpx.Json(w,
 			httpx.Response{
 				Message: "user denied access",
-				Error:   apperr.ErrAccessDenied.Error(),
+				Error:   apperr.ErrAccessDenied,
 				Status:  http.StatusUnauthorized,
 			},
 		)
@@ -213,7 +213,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, apperr.ErrNotFound) {
 			httpx.Json(w, httpx.Response{
 				Message: "requested user not found",
-				Error:   err.Error(),
+				Error:   err,
 				Status:  http.StatusNotFound,
 			})
 			return
@@ -262,7 +262,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 			httpx.Json(w, httpx.Response{
 				Message: "validation error",
 				Data:    errs,
-				Error:   apperr.ErrInvalidRequest.Error(),
+				Error:   apperr.ErrInvalidRequest,
 				Status:  http.StatusBadRequest,
 			})
 			return
@@ -289,7 +289,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 			httpx.Json(w,
 				httpx.Response{
 					Message: "user not found",
-					Error:   apperr.ErrNotFound.Error(),
+					Error:   apperr.ErrNotFound,
 					Status:  http.StatusNotFound,
 				},
 			)
@@ -299,7 +299,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 			httpx.Json(w,
 				httpx.Response{
 					Message: "email already taken",
-					Error:   apperr.ErrUniqueViolation.Error(),
+					Error:   apperr.ErrUniqueViolation,
 					Status:  http.StatusConflict,
 				},
 			)
@@ -332,7 +332,7 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 			httpx.Json(w,
 				httpx.Response{
 					Message: "user not found",
-					Error:   apperr.ErrNotFound.Error(),
+					Error:   apperr.ErrNotFound,
 					Status:  http.StatusNotFound,
 				},
 			)

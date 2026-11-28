@@ -68,7 +68,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		httpx.Json(w, httpx.Response{
 			Message: "Invalid request",
 			Status:  http.StatusBadRequest,
-			Error:   err.Error(),
+			Error:   err,
 		})
 		return
 
@@ -189,7 +189,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 		httpx.Json(w, httpx.Response{
 			Message: "Invalid request",
 			Status:  http.StatusBadRequest,
-			Error:   err.Error(),
+			Error:   err,
 		})
 		return
 	}
@@ -211,7 +211,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 		if err == ErrWorkspaceNotFound {
 			httpx.Json(w, httpx.Response{
 				Message: "workspace not found",
-				Error:   err.Error(),
+				Error:   err,
 				Status:  http.StatusNotFound,
 			})
 			return
@@ -247,7 +247,7 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, ErrWorkspaceNotFound) {
 			httpx.Json(w, httpx.Response{
 				Message: "workspace not found",
-				Error:   err.Error(),
+				Error:   err,
 				Status:  http.StatusNotFound,
 			})
 			return

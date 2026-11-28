@@ -25,7 +25,7 @@ func IsAuthenticated(next http.HandlerFunc) http.HandlerFunc {
 		unauthorised := func() {
 			httpx.Json(w, httpx.Response{
 				Message: "Restricted from access",
-				Error:   apperr.ErrAccessDenied.Error(),
+				Error:   apperr.ErrAccessDenied,
 				Status:  http.StatusUnauthorized,
 			})
 		}

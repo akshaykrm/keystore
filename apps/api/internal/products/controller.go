@@ -70,7 +70,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 			httpx.Json(w, httpx.Response{
 				Message: "Invalid request",
 				Status:  http.StatusBadRequest,
-				Error:   err.Error(),
+				Error:   err,
 			})
 			return
 		}
@@ -89,7 +89,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, apperr.ErrUniqueViolation) {
 			httpx.Json(w, httpx.Response{
 				Message: "A product with SKU already exists.",
-				Error:   err.Error(),
+				Error:   err,
 				Status:  http.StatusConflict,
 			})
 			return
@@ -128,7 +128,7 @@ func (c *Controller) GetOneByID(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		httpx.Json(w, httpx.Response{
 			Message: "user denied access",
-			Error:   apperr.ErrAccessDenied.Error(),
+			Error:   apperr.ErrAccessDenied,
 			Status:  http.StatusUnauthorized,
 		})
 		return
@@ -147,7 +147,7 @@ func (c *Controller) GetOneByID(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, apperr.ErrNotFound) {
 			httpx.Json(w, httpx.Response{
 				Message: "the requested product does not exist",
-				Error:   err.Error(),
+				Error:   err,
 				Status:  http.StatusNotFound,
 			})
 			return
@@ -194,7 +194,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 			httpx.Json(w, httpx.Response{
 				Message: "Invalid request",
 				Status:  http.StatusBadRequest,
-				Error:   err.Error(),
+				Error:   err,
 			})
 			return
 		}
@@ -221,7 +221,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	if err := c.service.UpdateByID(r.Context(), payload); err != nil {
 		httpx.Json(w, httpx.Response{
 			Message: "something went wrong while updating workspace",
-			Error:   err.Error(),
+			Error:   err,
 			Status:  http.StatusInternalServerError,
 		})
 		return

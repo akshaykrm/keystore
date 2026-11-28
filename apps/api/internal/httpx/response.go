@@ -10,7 +10,7 @@ import (
 func Json(w http.ResponseWriter, response Response) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.Status)
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	if err := json.NewEncoder(w).Encode(response.toOut()); err != nil {
 		fmt.Printf("Failed to send back message: %v", err)
 
 	}

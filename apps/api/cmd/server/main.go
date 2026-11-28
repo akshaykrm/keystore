@@ -54,7 +54,7 @@ func main() {
 	workspaceController := workspace.NewController(workspaceService)
 	userController := user.NewController(userService)
 
-	// Register Roues
+	// Register Routes
 	user.RegisterRoutes(mux, userController)
 	workspace.RegisterRoutes(mux, workspaceController)
 	products.RegisterRoutes(mux, productController)
