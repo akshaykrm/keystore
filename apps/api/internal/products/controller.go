@@ -38,12 +38,21 @@ func NewController(service *Service) *Controller {
 	}
 }
 
+// @Summary Create a product
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param request body CreateProductRequest true "product to create"
+// @Success 201 {object} CreateProductResponse
+// @Failure 400 {object} httpx.ErrorResponse
+// @Failure 409 {object} httpx.ErrorResponse
+// @Failure 500 {object} httpx.ErrorResponse
+// @Router /products [post]
 func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateProductRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		fmt.Println(err)
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Invalid Body",
 			Status:  http.StatusBadRequest,
 		})
@@ -67,10 +76,11 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 					errs[v.Field()] = fmt.Sprintf("must be at most %s characters", v.Param())
 				}
 			}
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "Invalid request",
 				Status:  http.StatusBadRequest,
-				Error:   err,
+				Error:   apperr.ErrInvalidRequest,
+				Data:    err,
 			})
 			return
 		}
@@ -87,7 +97,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	p, err := c.service.Create(r.Context(), product)
 	if err != nil {
 		if errors.Is(err, apperr.ErrUniqueViolation) {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "A product with SKU already exists.",
 				Error:   err,
 				Status:  http.StatusConflict,
@@ -98,10 +108,21 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	responseObject := ProductResponse{
+		ID:           p.ID,
+		SkuID:        p.SkuID,
+		ProductID:    p.ProductID,
+		Name:         p.Name,
+		Descriptions: p.Descriptions,
+		WorkspaceID:  p.WorkspaceID,
+		CreatedAt:    p.CreatedAt,
+		UpdatedAt:    p.UpdatedAt,
+	}
+
+	httpx.Json(w, httpx.Response[ProductResponse]{
 		Message: "product created",
 		Status:  http.StatusCreated,
-		Data:    p,
+		Data:    responseObject,
 	})
 }
 
@@ -113,7 +134,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "product list",
 		Data:    products,
 		Status:  http.StatusOK,
@@ -126,7 +147,7 @@ func (c *Controller) GetOneByID(w http.ResponseWriter, r *http.Request) {
 	_, ok := auth.GetClaims(r)
 
 	if !ok {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "user denied access",
 			Error:   apperr.ErrAccessDenied,
 			Status:  http.StatusUnauthorized,
@@ -135,7 +156,7 @@ func (c *Controller) GetOneByID(w http.ResponseWriter, r *http.Request) {
 	}
 	num, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Product id invalid",
 			Status:  http.StatusBadRequest,
 		})
@@ -145,7 +166,7 @@ func (c *Controller) GetOneByID(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, apperr.ErrNotFound) {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "the requested product does not exist",
 				Error:   err,
 				Status:  http.StatusNotFound,
@@ -155,7 +176,7 @@ func (c *Controller) GetOneByID(w http.ResponseWriter, r *http.Request) {
 		httpx.InternalServerError(w, r, err)
 		return
 	}
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "product found",
 		Data:    product,
 		Status:  http.StatusOK,
@@ -167,7 +188,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	var body updateProductRequest
 
 	if err := httpx.Decode(r.Body, &body); err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Invalid Body",
 			Status:  http.StatusBadRequest,
 		})
@@ -191,7 +212,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 					errs[v.Field()] = fmt.Sprintf("must be at most %s characters", v.Param())
 				}
 			}
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "Invalid request",
 				Status:  http.StatusBadRequest,
 				Error:   err,
@@ -202,7 +223,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 
 	num, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Product id invalid",
 			Status:  http.StatusBadRequest,
 		})
@@ -219,14 +240,14 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := c.service.UpdateByID(r.Context(), payload); err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "something went wrong while updating workspace",
 			Error:   err,
 			Status:  http.StatusInternalServerError,
 		})
 		return
 	}
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "Updated product",
 		Status:  http.StatusOK,
 	})

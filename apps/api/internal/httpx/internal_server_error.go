@@ -9,7 +9,7 @@ import (
 
 func InternalServerError(w http.ResponseWriter, r *http.Request, err error) {
 	log.Printf("ERROR: %s %s: %v\n", r.Method, r.URL.Path, err)
-	Json(w, Response{
+	Json(w, Response[any]{
 		Message: "an unexpected error occurred. Please try again later",
 		Error:   apperr.ErrInternalServerError,
 		Status:  http.StatusInternalServerError,

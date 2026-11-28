@@ -23,7 +23,7 @@ func GetClaims(r *http.Request) (*Claims, bool) {
 func IsAuthenticated(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		unauthorised := func() {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "Restricted from access",
 				Error:   apperr.ErrAccessDenied,
 				Status:  http.StatusUnauthorized,

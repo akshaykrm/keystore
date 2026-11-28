@@ -1,0 +1,171 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Backend API for the Keystore app.",
+        "title": "Keystore API",
+        "contact": {},
+        "version": "0.0.1"
+    },
+    "basePath": "/",
+    "paths": {
+        "/products": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Create a product",
+                "parameters": [
+                    {
+                        "description": "product to create",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/products.CreateProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/products.CreateProductResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "httpx.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "description": "Error holds the failure response, if the request failed.",
+                    "type": "string"
+                },
+                "message": {
+                    "description": "Message is a short human readable summary of the result.",
+                    "type": "string"
+                }
+            }
+        },
+        "products.CreateProductRequest": {
+            "type": "object",
+            "required": [
+                "description",
+                "name",
+                "product_id",
+                "sku_id",
+                "workspace_id"
+            ],
+            "properties": {
+                "description": {
+                    "description": "Description is the products description.",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 6
+                },
+                "name": {
+                    "description": "Name is the products display name.",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 3
+                },
+                "product_id": {
+                    "description": "ProductID is the identification for the type of product.",
+                    "type": "string",
+                    "maxLength": 12,
+                    "minLength": 6
+                },
+                "sku_id": {
+                    "description": "SkuID is unique identifier for the product.",
+                    "type": "string",
+                    "maxLength": 10,
+                    "minLength": 6
+                },
+                "workspace_id": {
+                    "description": "WorkspaceID is used to identify in which workspace the product belongs to.",
+                    "type": "integer"
+                }
+            }
+        },
+        "products.CreateProductResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "Data is the product that was created.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/products.ProductResponse"
+                        }
+                    ]
+                },
+                "message": {
+                    "description": "Message is a short summary of the result, such as \"product created\".",
+                    "type": "string"
+                }
+            }
+        },
+        "products.ProductResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "CreatedAt is when the product was created, in UTC.",
+                    "type": "string"
+                },
+                "descriptions": {
+                    "description": "Description is a short summary of the product."
+                },
+                "id": {
+                    "description": "ID is the internal identifier of the product.",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Name is the product's display name.",
+                    "type": "string"
+                },
+                "product_id": {
+                    "description": "ProductID is provisional. Describe it once its source is decided.",
+                    "type": "string"
+                },
+                "sku_id": {
+                    "description": "SkuID is the stock-keeping unit that identifies the product in inventory.",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "UpdatedAt is when the product was last changed, in UTC.",
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "description": "WorkspaceID is the workspace the product belongs to.",
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

@@ -46,7 +46,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	claims, ok := auth.GetClaims(r)
 	if !ok {
 		httpx.Json(w,
-			httpx.Response{
+			httpx.Response[any]{
 				Message: "user denied access",
 				Status:  http.StatusUnauthorized,
 			},
@@ -57,7 +57,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	var payload createWorkspaceRequestBody
 
 	if err := httpx.Decode(r.Body, &payload); err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Invalid Body",
 			Status:  http.StatusBadRequest,
 		})
@@ -65,7 +65,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validate(payload); err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Invalid request",
 			Status:  http.StatusBadRequest,
 			Error:   err,
@@ -81,7 +81,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := c.service.Create(r.Context(), workspace); err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "something went wrong while creating workspace",
 			Status:  http.StatusInternalServerError,
 		})
@@ -89,7 +89,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "Created workspace",
 		Status:  http.StatusCreated,
 	})
@@ -99,7 +99,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	claims, ok := auth.GetClaims(r)
 	if !ok {
 		httpx.Json(w,
-			httpx.Response{
+			httpx.Response[any]{
 				Message: "user denied access",
 				Status:  http.StatusUnauthorized,
 			},
@@ -112,7 +112,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 	workspaces, err := c.service.GetAll(r.Context(), filter)
 	if err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "something went wrong while retrieving workspaces",
 			Status:  http.StatusInternalServerError,
 		})
@@ -120,7 +120,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "workspace list",
 		Data:    workspaces,
 		Status:  http.StatusOK,
@@ -133,7 +133,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 	_, ok := auth.GetClaims(r)
 	if !ok {
 		httpx.Json(w,
-			httpx.Response{
+			httpx.Response[any]{
 				Message: "user denied access",
 				Status:  http.StatusUnauthorized,
 			},
@@ -143,7 +143,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	num, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Product id invalid",
 			Status:  http.StatusBadRequest,
 		})
@@ -153,12 +153,12 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, ErrWorkspaceNotFound) {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "Workspace not found",
 				Status:  http.StatusNotFound,
 			})
 		} else {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "something went wrong while retrieving workspace",
 				Status:  http.StatusInternalServerError,
 			})
@@ -166,7 +166,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "Workspace found",
 		Data:    workspace,
 		Status:  http.StatusOK,
@@ -178,7 +178,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	var body updateWorkspaceRequestBody
 
 	if err := httpx.Decode(r.Body, &body); err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Invalid Body",
 			Status:  http.StatusBadRequest,
 		})
@@ -186,7 +186,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validate(body); err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Invalid request",
 			Status:  http.StatusBadRequest,
 			Error:   err,
@@ -200,7 +200,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	}
 	num, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Product id invalid",
 			Status:  http.StatusBadRequest,
 		})
@@ -209,14 +209,14 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 
 	if err := c.service.UpdateById(r.Context(), num, payload); err != nil {
 		if err == ErrWorkspaceNotFound {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "workspace not found",
 				Error:   err,
 				Status:  http.StatusNotFound,
 			})
 			return
 		}
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "something went wrong while updating workspace",
 			Status:  http.StatusInternalServerError,
 		})
@@ -224,7 +224,7 @@ func (c *Controller) UpdateByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "successfully updated workspace",
 		Status:  http.StatusOK,
 	})
@@ -236,7 +236,7 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 
 	num, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Product id invalid",
 			Status:  http.StatusBadRequest,
 		})
@@ -245,14 +245,14 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 
 	if err := c.service.DeleteById(r.Context(), num); err != nil {
 		if errors.Is(err, ErrWorkspaceNotFound) {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "workspace not found",
 				Error:   err,
 				Status:  http.StatusNotFound,
 			})
 			return
 		}
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "something went wrong while deleting workspace",
 			Status:  http.StatusInternalServerError,
 		})
@@ -260,7 +260,7 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "workspace deleted",
 		Status:  http.StatusOK,
 	})

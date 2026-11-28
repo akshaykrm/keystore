@@ -42,7 +42,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&loginReq); err != nil {
 		httpx.Json(w,
-			httpx.Response{
+			httpx.Response[any]{
 				Message: "invalid payload",
 				Status:  http.StatusBadRequest,
 			},
@@ -52,7 +52,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 
 	err := c.validate.Struct(loginReq)
 	if err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "validation error",
 			Status:  http.StatusBadRequest,
 		})
@@ -62,7 +62,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 	token, err := c.service.Login(r.Context(), loginReq)
 	if err != nil {
 		if errors.Is(err, apperr.ErrNotFound) {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "the requested user does not exist",
 				Error:   err,
 				Status:  http.StatusNotFound,
@@ -70,7 +70,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if errors.Is(err, apperr.ErrAccessDenied) {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "resource restricted",
 				Error:   err,
 				Status:  http.StatusUnauthorized,
@@ -83,7 +83,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "authentication successful",
 		Data:    LoginResponse{token},
 		Status:  http.StatusOK,
@@ -95,7 +95,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httpx.Json(w,
-			httpx.Response{
+			httpx.Response[any]{
 				Message: "invalid payload",
 				Status:  http.StatusBadRequest,
 			},
@@ -120,7 +120,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 					errs[v.Field()] = fmt.Sprintf("must be at most %s characters", v.Param())
 				}
 			}
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "invalid request",
 				Data:    errs,
 				Error:   apperr.ErrInvalidRequest,
@@ -140,7 +140,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, apperr.ErrUniqueViolation) {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "please chose another email",
 				Error:   err,
 				Status:  http.StatusConflict,
@@ -150,7 +150,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "user created",
 		Status:  http.StatusCreated,
 	})
@@ -160,7 +160,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	_, ok := auth.GetClaims(r)
 	if !ok {
 		httpx.Json(w,
-			httpx.Response{
+			httpx.Response[any]{
 				Message: "user denied access",
 				Error:   apperr.ErrAccessDenied,
 				Status:  http.StatusUnauthorized,
@@ -176,7 +176,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "active users list",
 		Data:    users,
 		Status:  http.StatusOK,
@@ -187,7 +187,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 	_, ok := auth.GetClaims(r)
 	if !ok {
 		httpx.Json(w,
-			httpx.Response{
+			httpx.Response[any]{
 				Message: "user denied access",
 				Error:   apperr.ErrAccessDenied,
 				Status:  http.StatusUnauthorized,
@@ -200,7 +200,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	num, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "user id invalid",
 			Status:  http.StatusBadRequest,
 		})
@@ -211,7 +211,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, apperr.ErrNotFound) {
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "requested user not found",
 				Error:   err,
 				Status:  http.StatusNotFound,
@@ -222,7 +222,7 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "user retrieved by id",
 		Data:    userResp,
 		Status:  http.StatusOK,
@@ -235,7 +235,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httpx.Json(w,
-			httpx.Response{
+			httpx.Response[any]{
 				Message: "invalid payload",
 				Status:  http.StatusBadRequest,
 			},
@@ -259,7 +259,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 
 				}
 			}
-			httpx.Json(w, httpx.Response{
+			httpx.Json(w, httpx.Response[any]{
 				Message: "validation error",
 				Data:    errs,
 				Error:   apperr.ErrInvalidRequest,
@@ -277,7 +277,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 
 	num, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Product id invalid",
 			Status:  http.StatusBadRequest,
 		})
@@ -287,7 +287,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 	if _, err := c.service.UpdateById(r.Context(), num, user); err != nil {
 		if errors.Is(err, apperr.ErrNotFound) {
 			httpx.Json(w,
-				httpx.Response{
+				httpx.Response[any]{
 					Message: "user not found",
 					Error:   apperr.ErrNotFound,
 					Status:  http.StatusNotFound,
@@ -297,7 +297,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 		}
 		if errors.Is(err, apperr.ErrUniqueViolation) {
 			httpx.Json(w,
-				httpx.Response{
+				httpx.Response[any]{
 					Message: "email already taken",
 					Error:   apperr.ErrUniqueViolation,
 					Status:  http.StatusConflict,
@@ -309,7 +309,7 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "user updated",
 		Status:  http.StatusOK,
 	})
@@ -320,7 +320,7 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 
 	num, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		httpx.Json(w, httpx.Response{
+		httpx.Json(w, httpx.Response[any]{
 			Message: "Product id invalid",
 			Status:  http.StatusBadRequest,
 		})
@@ -330,7 +330,7 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 	if err := c.service.DeleteById(r.Context(), num); err != nil {
 		if errors.Is(err, apperr.ErrNotFound) {
 			httpx.Json(w,
-				httpx.Response{
+				httpx.Response[any]{
 					Message: "user not found",
 					Error:   apperr.ErrNotFound,
 					Status:  http.StatusNotFound,
@@ -342,7 +342,7 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Json(w, httpx.Response{
+	httpx.Json(w, httpx.Response[any]{
 		Message: "user deleted",
 		Status:  http.StatusOK,
 	})

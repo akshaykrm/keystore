@@ -30,6 +30,10 @@ func Connect() (*sql.DB, error) {
 	return conn, nil
 }
 
+// @title Keystore API
+// @version 0.0.1
+// @description Backend API for the Keystore app.
+// @BasePath /
 func main() {
 	conn, err := Connect()
 	if err != nil {
