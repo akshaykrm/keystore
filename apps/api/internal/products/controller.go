@@ -126,7 +126,11 @@ func (c *Controller) GetOneByID(w http.ResponseWriter, r *http.Request) {
 	_, ok := auth.GetClaims(r)
 
 	if !ok {
-		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
+		httpx.Json(w, httpx.Response{
+			Message: "user denied access",
+			Error:   apperr.ErrAccessDenied.Error(),
+			Status:  http.StatusUnauthorized,
+		})
 		return
 	}
 	num, err := strconv.ParseInt(id, 10, 64)

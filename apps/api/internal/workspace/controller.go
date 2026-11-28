@@ -45,7 +45,12 @@ func (v ValidationErrors) Error() string {
 func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	claims, ok := auth.GetClaims(r)
 	if !ok {
-		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
+		httpx.Json(w,
+			httpx.Response{
+				Message: "user denied access",
+				Status:  http.StatusUnauthorized,
+			},
+		)
 		return
 	}
 
@@ -93,7 +98,12 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	claims, ok := auth.GetClaims(r)
 	if !ok {
-		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
+		httpx.Json(w,
+			httpx.Response{
+				Message: "user denied access",
+				Status:  http.StatusUnauthorized,
+			},
+		)
 		return
 	}
 
@@ -122,7 +132,12 @@ func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue(("id"))
 	_, ok := auth.GetClaims(r)
 	if !ok {
-		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
+		httpx.Json(w,
+			httpx.Response{
+				Message: "user denied access",
+				Status:  http.StatusUnauthorized,
+			},
+		)
 		return
 	}
 

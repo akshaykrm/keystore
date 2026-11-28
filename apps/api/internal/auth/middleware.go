@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/akshaykrm/keystore/apps/api/internal/apperr"
 	"github.com/akshaykrm/keystore/apps/api/internal/httpx"
 )
 
@@ -22,11 +23,11 @@ func GetClaims(r *http.Request) (*Claims, bool) {
 func IsAuthenticated(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		unauthorised := func() {
-			res := httpx.ErrorResponse{
+			httpx.Json(w, httpx.Response{
 				Message: "Restricted from access",
-				Error:   AccessDenied.Error(),
-			}
-			httpx.Error2(w, res, http.StatusUnauthorized)
+				Error:   apperr.ErrAccessDenied.Error(),
+				Status:  http.StatusUnauthorized,
+			})
 		}
 
 		bearerToken := r.Header.Get("Authorization")

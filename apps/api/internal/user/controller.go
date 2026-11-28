@@ -41,16 +41,21 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 	var loginReq LoginRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&loginReq); err != nil {
-		httpx.Error(w, "invalid body", http.StatusBadRequest)
+		httpx.Json(w,
+			httpx.Response{
+				Message: "invalid payload",
+				Status:  http.StatusBadRequest,
+			},
+		)
 		return
 	}
 
 	err := c.validate.Struct(loginReq)
 	if err != nil {
-		resp := httpx.ErrorResponse{
+		httpx.Json(w, httpx.Response{
 			Message: "validation error",
-		}
-		httpx.Error2(w, resp, http.StatusBadRequest)
+			Status:  http.StatusBadRequest,
+		})
 		return
 	}
 
@@ -89,7 +94,12 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.Error(w, "invalid body", http.StatusBadRequest)
+		httpx.Json(w,
+			httpx.Response{
+				Message: "invalid payload",
+				Status:  http.StatusBadRequest,
+			},
+		)
 		return
 	}
 
@@ -110,11 +120,12 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 					errs[v.Field()] = fmt.Sprintf("must be at most %s characters", v.Param())
 				}
 			}
-			resp := httpx.ErrorResponse{
-				Message: "validation error",
-				Error:   errs,
-			}
-			httpx.Error2(w, resp, http.StatusBadRequest)
+			httpx.Json(w, httpx.Response{
+				Message: "invalid request",
+				Data:    errs,
+				Error:   apperr.ErrInvalidRequest.Error(),
+				Status:  http.StatusBadRequest,
+			})
 			return
 		}
 	}
@@ -148,7 +159,13 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	_, ok := auth.GetClaims(r)
 	if !ok {
-		httpx.Error(w, auth.AccessDenied.Error(), http.StatusUnauthorized)
+		httpx.Json(w,
+			httpx.Response{
+				Message: "user denied access",
+				Error:   apperr.ErrAccessDenied.Error(),
+				Status:  http.StatusUnauthorized,
+			},
+		)
 		return
 	}
 
@@ -167,6 +184,18 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetByID(w http.ResponseWriter, r *http.Request) {
+	_, ok := auth.GetClaims(r)
+	if !ok {
+		httpx.Json(w,
+			httpx.Response{
+				Message: "user denied access",
+				Error:   apperr.ErrAccessDenied.Error(),
+				Status:  http.StatusUnauthorized,
+			},
+		)
+		return
+	}
+
 	id := r.PathValue("id")
 
 	num, err := strconv.ParseInt(id, 10, 64)
@@ -205,7 +234,12 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 	var req UpdateUserRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.Error(w, "invalid body", http.StatusBadRequest)
+		httpx.Json(w,
+			httpx.Response{
+				Message: "invalid payload",
+				Status:  http.StatusBadRequest,
+			},
+		)
 		return
 	}
 
@@ -225,11 +259,12 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 
 				}
 			}
-			resp := httpx.ErrorResponse{
+			httpx.Json(w, httpx.Response{
 				Message: "validation error",
-				Error:   errs,
-			}
-			httpx.Error2(w, resp, http.StatusBadRequest)
+				Data:    errs,
+				Error:   apperr.ErrInvalidRequest.Error(),
+				Status:  http.StatusBadRequest,
+			})
 			return
 		}
 
@@ -251,11 +286,23 @@ func (c *Controller) UpdateById(w http.ResponseWriter, r *http.Request) {
 
 	if _, err := c.service.UpdateById(r.Context(), num, user); err != nil {
 		if errors.Is(err, apperr.ErrNotFound) {
-			httpx.Error(w, "user not found", http.StatusNotFound)
+			httpx.Json(w,
+				httpx.Response{
+					Message: "user not found",
+					Error:   apperr.ErrNotFound.Error(),
+					Status:  http.StatusNotFound,
+				},
+			)
 			return
 		}
 		if errors.Is(err, apperr.ErrUniqueViolation) {
-			httpx.Error(w, "email already taken", http.StatusConflict)
+			httpx.Json(w,
+				httpx.Response{
+					Message: "email already taken",
+					Error:   apperr.ErrUniqueViolation.Error(),
+					Status:  http.StatusConflict,
+				},
+			)
 			return
 		}
 		httpx.InternalServerError(w, r, err)
@@ -282,7 +329,13 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 
 	if err := c.service.DeleteById(r.Context(), num); err != nil {
 		if errors.Is(err, apperr.ErrNotFound) {
-			httpx.Error(w, "user not found", http.StatusNotFound)
+			httpx.Json(w,
+				httpx.Response{
+					Message: "user not found",
+					Error:   apperr.ErrNotFound.Error(),
+					Status:  http.StatusNotFound,
+				},
+			)
 			return
 		}
 		httpx.InternalServerError(w, r, err)
